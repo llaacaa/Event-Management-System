@@ -1,10 +1,10 @@
 import { query } from "../utils/db";
-import { User } from "../types/types";
+import { ActivityStatus, User } from "../types/types";
 
 export const getUserByEmail = async (email: string) => {
     const user: User[] = await query("SELECT * FROM users WHERE email = $1", [email]);
     return user;
-}
+};
 
 export const addUser = async (user: User) => {
     const { email, name, lastName, userType, status, password } = user;
@@ -13,4 +13,52 @@ export const addUser = async (user: User) => {
         "INSERT INTO users (email, name, last_name, user_type, status, password) VALUES ($1, $2, $3, $4, $5, $6)",
         [email, name, lastName, userType, status, password]
     );
-}
+};
+
+export const fetchAllUsers = async () => {
+    const users: User[] = await query("SELECT * FROM users");
+    return users;
+};
+
+export const updateUserInfo = async (email: string, updates: Partial<User>) => {
+    const updateFields: string[] = [];
+    const values: any[] = [];
+    let paramCounter = 1;
+
+    if (updates.name !== undefined) {
+        updateFields.push(`name = $${paramCounter++}`);
+        values.push(updates.name);
+    }
+    if (updates.lastName !== undefined) {
+        updateFields.push(`last_name = $${paramCounter++}`);
+        values.push(updates.lastName);
+    }
+    if (updates.userType !== undefined) {
+        updateFields.push(`user_type = $${paramCounter++}`);
+        values.push(updates.userType);
+    }
+    if (updates.status !== undefined) {
+        updateFields.push(`status = $${paramCounter++}`);
+        values.push(updates.status);
+    }
+    if (updates.password !== undefined) {
+        updateFields.push(`password = $${paramCounter++}`);
+        values.push(updates.password);
+    }
+
+    if (updateFields.length === 0) return;
+
+    values.push(email);
+
+    const sql = `UPDATE users
+                 SET ${updateFields.join(", ")}
+                 WHERE email = $${paramCounter}`;
+    await query(sql, values);
+};
+
+export const updateUserActivityStatus = async (email: string, status: ActivityStatus) => {
+    await query(
+        "UPDATE users SET status = $1 WHERE email = $2",
+        [status, email]
+    );
+};

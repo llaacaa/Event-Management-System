@@ -2,6 +2,9 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import usersRouter from "./routes/users";
+import categoriesRouter from "./routes/categories";
+import eventsRouter from "./routes/events";
+import { initAdmin } from "./utils/db";
 
 dotenv.config();
 
@@ -15,12 +18,23 @@ const corsOptions = {
     credentials: true,
 };
 
+(async () => {
+    try {
+        await initAdmin();
+        console.log("Admin initialization completed");
+    } catch (error) {
+        console.error("Failed to initialize admin:", error);
+    }
+})();
+
 app.use(express.json());
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/users", usersRouter)
+app.use("/users", usersRouter);
+app.use("/categories", categoriesRouter);
+app.use("/events", eventsRouter);
 
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);

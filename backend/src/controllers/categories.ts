@@ -1,51 +1,60 @@
 import { Request, Response } from 'express';
+import {
+    addCategory,
+    getCategoriesWithPagination,
+    removeCategory,
+    updateCategoryDescription
+} from "../services/categories";
 
-/**
- * Get all categories with pagination
- */
 export const getCategories = async (req: Request, res: Response): Promise<void> => {
-    // Extract pagination parameters
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const offset = (page - 1) * limit;
 
-    // TODO: Query categories from database with pagination
-    // const { categories, count } = await yourCategoryService.getCategories(limit, offset);
+    const categoryInfo = await getCategoriesWithPagination(offset, limit);
+
+    const { categories, total } = categoryInfo;
+
+    const totalPages = Math.ceil(total / limit);
 
     res.status(200).json({
         success: true,
-        data: [], // Will be replaced with actual categories
+        data: categories,
         pagination: {
             page,
             limit,
-            total: 0, // Will be total count
-            totalPages: 0 // Will be calculated from total/limit
+            total,
+            totalPages
         }
     });
 };
 
-/**
- * Create a new category
- */
 export const createCategory = async (req: Request, res: Response): Promise<void> => {
     try {
         const { name, description } = req.body;
 
-        // Basic validation
-        if (!name) {
-            res.status(400).json({ success: false, message: 'Category name is required' });
+        if (!name || !description) {
+            res.status(400).json({ success: false, message: 'Category name and description are required' });
             return;
         }
 
-        // TODO: Insert category into database
-        // const newCategory = await yourCategoryService.createCategory({ name, description });
+        const newCategory = await addCategory(name, description);
 
         res.status(201).json({
             success: true,
             message: 'Category created successfully',
-            data: { name, description }
+            data: newCategory
         });
     } catch (error) {
+        if (error instanceof Error && error.message.includes('duplicate')) {
+            res.status(409).json({
+                success: false,
+                message: 'A category with this name already exists',
+                error: error.message
+            });
+            return;
+        }
+
         console.error('Error creating category:', error);
         res.status(500).json({
             success: false,
@@ -55,31 +64,21 @@ export const createCategory = async (req: Request, res: Response): Promise<void>
     }
 };
 
-/**
- * Update an existing category
- */
 export const updateCategory = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { id } = req.params;
         const { name, description } = req.body;
 
-        // Basic validation
-        if (!name) {
-            res.status(400).json({ success: false, message: 'Category name is required' });
+        if (!name || !description) {
+            res.status(400).json({ success: false, message: 'Category name and description are required' });
             return;
         }
 
-        // TODO: Update category in database
-        // const updatedCategory = await yourCategoryService.updateCategory(id, { name, description });
-        // if (!updatedCategory) {
-        //   res.status(404).json({ success: false, message: 'Category not found' });
-        //   return;
-        // }
+        const updatedCategory = await updateCategoryDescription(name, description);
 
         res.status(200).json({
             success: true,
             message: 'Category updated successfully',
-            data: { id, name, description }
+            data: updatedCategory
         });
     } catch (error) {
         console.error(`Error updating category ${req.params.id}:`, error);
@@ -91,15 +90,16 @@ export const updateCategory = async (req: Request, res: Response): Promise<void>
     }
 };
 
-/**
- * Delete a category
- */
 export const deleteCategory = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { id } = req.params;
+        const { name } = req.params;
 
-        // TODO: Check if category exists and if there are any events with this category
-        // TODO: Delete category from database if no associated events
+        if (!name) {
+            res.status(400).json({ success: false, message: 'Category name is required' });
+            return;
+        }
+
+        await removeCategory(name);
 
         res.status(200).json({
             success: true,

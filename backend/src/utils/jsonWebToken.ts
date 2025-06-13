@@ -17,8 +17,16 @@ export const jsonWebToken = {
     },
 };
 
+interface TokenData extends JwtPayload {
+    email: string;
+}
+
+export interface AuthenticatedRequest extends Request {
+    userData?: string;
+}
+
 export const checkForToken: RequestHandler = async (
-    req: Request,
+    req: AuthenticatedRequest,
     res: Response,
     next: NextFunction
 ) => {
@@ -33,5 +41,6 @@ export const checkForToken: RequestHandler = async (
         res.status(401).json({ message: "Unauthorized: Invalid token" });
         return;
     }
+    req.userData = (userData as TokenData).userId;
     next();
 };

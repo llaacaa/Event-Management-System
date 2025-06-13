@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { jsonWebToken } from "../utils/jsonWebToken";
 import { Encrypt } from "../utils/bcryptEncription";
 import { User, UserStatus, UserType } from "../types/types";
-import { addUser, getUserByEmail } from "../services/users";
+import { addUser, fetchAllUsers, getUserByEmail, updateUserActivityStatus, updateUserInfo } from "../services/users";
 
 export const registerUser = async (req: Request, res: Response) => {
     const { email, name, lastName, password } = req.body;
@@ -31,7 +31,7 @@ export const registerUser = async (req: Request, res: Response) => {
         userType: UserType.EVENT_CREATOR,
         status: UserStatus.ACTIVE,
         password: hashedPassword,
-    }
+    };
     await addUser(newUser);
 
     return res.status(201).json({
@@ -65,9 +65,7 @@ export const loginUser = async (req: Request, res: Response) => {
     const token = jsonWebToken.generateToken(searchUser[0].email);
 
     res.cookie("token", token, {
-        maxAge: 3600000,
         httpOnly: true,
-        secure: true,
         path: "/",
         domain: "localhost",
     });
@@ -81,5 +79,74 @@ export const loginUser = async (req: Request, res: Response) => {
             userType: searchUser[0].userType,
             status: searchUser[0].status,
         },
+    });
+};
+
+export const getAllUsers = async (req: Request, res: Response) => {
+    const users: User[] = await fetchAllUsers();
+
+    res.status(200).json({
+        users
+    });
+};
+
+export const updateUser = async (req: Request, res: Response) => {
+    const { email, name, lastName, userType } = req.body;
+
+    if (!email) {
+        return res.status(400).json({
+            message: "Email is required to identify the user"
+        });
+    }
+
+    const existingUser = await getUserByEmail(email);
+
+    if (existingUser.length === 0) {
+        return res.status(404).json({
+            message: "User not found"
+        });
+    }
+
+    const updates: Partial<User> = {};
+    if (name) updates.name = name;
+    if (lastName) updates.lastName = lastName;
+    if (userType && Object.values(UserType).includes(userType)) {
+        updates.userType = userType;
+    }
+
+    await updateUserInfo(email, updates);
+
+    return res.status(200).json({
+        message: "User updated successfully"
+    });
+};
+
+export const updateUserStatus = async (req: Request, res: Response) => {
+    const { status, email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({
+            message: "Email is required to identify the user"
+        });
+    }
+
+    if (!status || !Object.values(UserStatus).includes(status)) {
+        return res.status(400).json({
+            message: "Valid status is required"
+        });
+    }
+
+    const existingUser = await getUserByEmail(email);
+
+    if (existingUser.length === 0) {
+        return res.status(404).json({
+            message: "User not found"
+        });
+    }
+
+    await updateUserActivityStatus(email, status);
+
+    return res.status(200).json({
+        message: `User status updated to ${status} successfully`
     });
 };
