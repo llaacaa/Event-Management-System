@@ -1,6 +1,7 @@
 import express from "express";
 import asyncHandler from "../utils/catchAsync";
 import { getAllUsers, loginUser, registerUser, updateUser, updateUserStatus } from "../controllers/users";
+import { checkForAdminToken } from "../utils/jsonWebToken";
 
 const usersRouter = express.Router();
 
@@ -8,9 +9,9 @@ const usersRouter = express.Router();
 //3.1 prijava
 usersRouter.post("/login", asyncHandler(loginUser));
 
-usersRouter.get("/", asyncHandler(getAllUsers));
-usersRouter.post("/", asyncHandler(registerUser));
-usersRouter.put("/", asyncHandler(updateUser));
-usersRouter.patch("/", asyncHandler(updateUserStatus));
+usersRouter.get("/", checkForAdminToken, asyncHandler(getAllUsers));
+usersRouter.post("/", checkForAdminToken, asyncHandler(registerUser));
+usersRouter.put("/", checkForAdminToken, asyncHandler(updateUser));
+usersRouter.patch("/", checkForAdminToken, asyncHandler(updateUserStatus));
 
 export default usersRouter;

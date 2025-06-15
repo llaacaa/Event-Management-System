@@ -1,6 +1,7 @@
 export enum UserType {
     ADMIN = 'ADMIN',
     EVENT_CREATOR = 'EVENT_CREATOR',
+    USER = 'USER',
 }
 
 export enum UserStatus {
@@ -8,7 +9,7 @@ export enum UserStatus {
     NOT_ACTIVE = 'NOT_ACTIVE',
 }
 
-export type User = {
+export interface User {
     email: string;
     name: string;
     lastName: string;
@@ -26,7 +27,7 @@ export type ActivityStatus = {
     status: "ACTIVE" | "NOT_ACTIVE";
 }
 
-export type EventType = {
+export interface EventType {
     id: string;
     title: string;
     description: string;
@@ -36,11 +37,27 @@ export type EventType = {
     views: number;
     authorEmail: string;
     categoryName: string;
-    maxCapacity: number;
+    maxCapacity?: number;
     likeCount: number;
     dislikeCount: number;
+    tags?: string[];
+}
+
+export interface EventDTO {
+    title: string;
+    description: string;
+    eventDate: string;
+    location: string;
+    category: string;
+    tags?: string[];
+    maxCapacity?: number;
 }
 
 export type TotalCount = {
     count: string;
+}
+
+export interface TagType {
+    id: string;
+    name: string;
 }

@@ -4,6 +4,7 @@ import cors from "cors";
 import usersRouter from "./routes/users";
 import categoriesRouter from "./routes/categories";
 import eventsRouter from "./routes/events";
+import cookieParser from 'cookie-parser';
 import { initAdmin } from "./utils/db";
 
 dotenv.config();
@@ -27,6 +28,7 @@ const corsOptions = {
     }
 })();
 
+app.use(cookieParser());
 app.use(express.json());
 app.use(cors(corsOptions));
 app.use(express.json());

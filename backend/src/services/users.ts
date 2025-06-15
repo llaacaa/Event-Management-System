@@ -2,7 +2,7 @@ import { query } from "../utils/db";
 import { ActivityStatus, User } from "../types/types";
 
 export const getUserByEmail = async (email: string) => {
-    const user: User[] = await query("SELECT * FROM users WHERE email = $1", [email]);
+    const user: User[] = await query(`SELECT email, name, last_name AS "lastName", user_type AS "userType", status, password FROM users WHERE email = $1`, [email]);
     return user;
 };
 
@@ -16,7 +16,7 @@ export const addUser = async (user: User) => {
 };
 
 export const fetchAllUsers = async () => {
-    const users: User[] = await query("SELECT * FROM users");
+    const users: User[] = await query(`SELECT email, name, last_name AS "lastName", user_type AS "userType", status, password FROM users`);
     return users;
 };
 

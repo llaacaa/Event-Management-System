@@ -3,21 +3,28 @@ import { jsonWebToken } from "../utils/jsonWebToken";
 import { Encrypt } from "../utils/bcryptEncription";
 import { User, UserStatus, UserType } from "../types/types";
 import { addUser, fetchAllUsers, getUserByEmail, updateUserActivityStatus, updateUserInfo } from "../services/users";
+import { isValidEmail } from "../utils/format";
 
 export const registerUser = async (req: Request, res: Response) => {
     const { email, name, lastName, password } = req.body;
 
     if (!email || !password || !name || !lastName) {
         const message = "Please provide all required fields: email, name, lastName, and password.";
-        return res.status(400).send({
+        return res.status(400).json({
             message,
+        });
+    }
+
+    if (!isValidEmail(email)) {
+        return res.status(400).json({
+            message: "Invalid email format.",
         });
     }
 
     const user = await getUserByEmail(email);
 
     if (user.length !== 0) {
-        return res.status(400).send({
+        return res.status(400).json({
             message: "User already registered",
         });
     }
@@ -29,7 +36,7 @@ export const registerUser = async (req: Request, res: Response) => {
         name,
         lastName,
         userType: UserType.EVENT_CREATOR,
-        status: UserStatus.ACTIVE,
+        status: UserStatus.ACTIVE,  // Assuming new users are active by default
         password: hashedPassword,
     };
     await addUser(newUser);
@@ -44,7 +51,7 @@ export const loginUser = async (req: Request, res: Response) => {
 
     if (!email || !password) {
         const message = "Please provide all required fields: email and password.";
-        return res.status(400).send({
+        return res.status(400).json({
             message,
         });
     }
@@ -62,10 +69,16 @@ export const loginUser = async (req: Request, res: Response) => {
         });
     }
 
+    if (searchUser[0].status === UserStatus.NOT_ACTIVE) {
+        return res.status(403).json({
+            message: "User is not active.",
+        });
+    }
+
     const token = jsonWebToken.generateToken(searchUser[0].email);
 
     res.cookie("token", token, {
-        httpOnly: true,
+        // httpOnly: true,
         path: "/",
         domain: "localhost",
     });

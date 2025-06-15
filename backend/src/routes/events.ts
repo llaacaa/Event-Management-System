@@ -7,7 +7,7 @@ const eventsRouter = express.Router();
 
 eventsRouter.get("/", asyncHandler(getAllEvents));
 eventsRouter.post("/", checkForToken, asyncHandler(addEvent));
-eventsRouter.patch("/:id", asyncHandler(updateEvent));
-eventsRouter.delete("/:id", asyncHandler(deleteEvent));
+eventsRouter.patch("/:id", checkForToken, asyncHandler(updateEvent));
+eventsRouter.delete("/:id", checkForToken, asyncHandler(deleteEvent));
 
 export default eventsRouter;

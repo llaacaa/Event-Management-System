@@ -40,3 +40,11 @@ export const removeCategory = async (name: string): Promise<void> => {
 
     await query(queryText, values);
 }
+
+export const getCategoryByName = async (name: string): Promise<Category | null> => {
+    const queryText = "SELECT * FROM categories WHERE name = $1";
+    const values = [name];
+
+    const result: Category[] = await query(queryText, values);
+    return result.length > 0 ? result[0] : null;
+}

@@ -1,10 +1,11 @@
 import { Request, Response } from 'express';
 import {
     addCategory,
-    getCategoriesWithPagination,
+    getCategoriesWithPagination, getCategoryByName,
     removeCategory,
     updateCategoryDescription
 } from "../services/categories";
+import { getEventBasedOnCategory } from "../services/events";
 
 export const getCategories = async (req: Request, res: Response): Promise<void> => {
     const page = parseInt(req.query.page as string) || 1;
@@ -96,6 +97,23 @@ export const deleteCategory = async (req: Request, res: Response): Promise<void>
 
         if (!name) {
             res.status(400).json({ success: false, message: 'Category name is required' });
+            return;
+        }
+
+        const category = await getCategoryByName(name);
+
+        if (!category) {
+            res.status(404).json({ success: false, message: 'Category not found' });
+            return;
+        }
+
+        const event = await getEventBasedOnCategory(name);
+
+        if (event) {
+            res.status(400).json({
+                success: false,
+                message: 'Cannot delete category with associated events'
+            });
             return;
         }
 
