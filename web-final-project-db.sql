@@ -5,7 +5,7 @@
 -- Dumped from database version 17.4
 -- Dumped by pg_dump version 17.4
 
--- Started on 2025-05-31 15:30:25
+-- Started on 2025-06-15 02:33:09
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -20,7 +20,7 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- TOC entry 859 (class 1247 OID 32776)
+-- TOC entry 863 (class 1247 OID 32776)
 -- Name: user_status_enum; Type: TYPE; Schema: public; Owner: postgres
 --
 
@@ -33,13 +33,14 @@ CREATE TYPE public.user_status_enum AS ENUM (
 ALTER TYPE public.user_status_enum OWNER TO postgres;
 
 --
--- TOC entry 856 (class 1247 OID 32770)
+-- TOC entry 860 (class 1247 OID 32770)
 -- Name: user_type_enum; Type: TYPE; Schema: public; Owner: postgres
 --
 
 CREATE TYPE public.user_type_enum AS ENUM (
     'EVENT_CREATOR',
-    'ADMIN'
+    'ADMIN',
+    'USER'
 );
 
 
@@ -61,6 +62,48 @@ CREATE TABLE public.categories (
 
 
 ALTER TABLE public.categories OWNER TO postgres;
+
+--
+-- TOC entry 229 (class 1259 OID 40983)
+-- Name: comment_reactions; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.comment_reactions (
+    id integer NOT NULL,
+    comment_id integer NOT NULL,
+    visitor_id text NOT NULL,
+    reaction_type text NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT comment_reactions_reaction_type_check CHECK ((reaction_type = ANY (ARRAY['like'::text, 'dislike'::text])))
+);
+
+
+ALTER TABLE public.comment_reactions OWNER TO postgres;
+
+--
+-- TOC entry 228 (class 1259 OID 40982)
+-- Name: comment_reactions_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.comment_reactions_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.comment_reactions_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5000 (class 0 OID 0)
+-- Dependencies: 228
+-- Name: comment_reactions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.comment_reactions_id_seq OWNED BY public.comment_reactions.id;
+
 
 --
 -- TOC entry 225 (class 1259 OID 32899)
@@ -97,12 +140,54 @@ CREATE SEQUENCE public.comments_id_seq
 ALTER SEQUENCE public.comments_id_seq OWNER TO postgres;
 
 --
--- TOC entry 4969 (class 0 OID 0)
+-- TOC entry 5001 (class 0 OID 0)
 -- Dependencies: 224
 -- Name: comments_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public.comments_id_seq OWNED BY public.comments.id;
+
+
+--
+-- TOC entry 231 (class 1259 OID 41002)
+-- Name: event_reactions; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.event_reactions (
+    id integer NOT NULL,
+    event_id integer NOT NULL,
+    visitor_id text NOT NULL,
+    reaction_type text NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT event_reactions_reaction_type_check CHECK ((reaction_type = ANY (ARRAY['like'::text, 'dislike'::text, 'view'::text])))
+);
+
+
+ALTER TABLE public.event_reactions OWNER TO postgres;
+
+--
+-- TOC entry 230 (class 1259 OID 41001)
+-- Name: event_reactions_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.event_reactions_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.event_reactions_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5002 (class 0 OID 0)
+-- Dependencies: 230
+-- Name: event_reactions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.event_reactions_id_seq OWNED BY public.event_reactions.id;
 
 
 --
@@ -133,7 +218,9 @@ CREATE TABLE public.events (
     views integer DEFAULT 0 NOT NULL,
     author_email character varying(255),
     category_name character varying(50) NOT NULL,
-    max_capacity integer
+    max_capacity integer,
+    like_count integer DEFAULT 0 NOT NULL,
+    dislike_count integer DEFAULT 0 NOT NULL
 );
 
 
@@ -156,7 +243,7 @@ CREATE SEQUENCE public.events_id_seq
 ALTER SEQUENCE public.events_id_seq OWNER TO postgres;
 
 --
--- TOC entry 4970 (class 0 OID 0)
+-- TOC entry 5003 (class 0 OID 0)
 -- Dependencies: 219
 -- Name: events_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -171,9 +258,9 @@ ALTER SEQUENCE public.events_id_seq OWNED BY public.events.id;
 
 CREATE TABLE public.rsvps (
     id integer NOT NULL,
-    user_email character varying(255),
     event_id integer NOT NULL,
-    rsvp_date timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+    rsvp_date timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    user_name text NOT NULL
 );
 
 
@@ -196,7 +283,7 @@ CREATE SEQUENCE public.rsvps_id_seq
 ALTER SEQUENCE public.rsvps_id_seq OWNER TO postgres;
 
 --
--- TOC entry 4971 (class 0 OID 0)
+-- TOC entry 5004 (class 0 OID 0)
 -- Dependencies: 226
 -- Name: rsvps_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -234,7 +321,7 @@ CREATE SEQUENCE public.tags_id_seq
 ALTER SEQUENCE public.tags_id_seq OWNER TO postgres;
 
 --
--- TOC entry 4972 (class 0 OID 0)
+-- TOC entry 5005 (class 0 OID 0)
 -- Dependencies: 221
 -- Name: tags_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -260,7 +347,15 @@ CREATE TABLE public.users (
 ALTER TABLE public.users OWNER TO postgres;
 
 --
--- TOC entry 4779 (class 2604 OID 32902)
+-- TOC entry 4797 (class 2604 OID 40986)
+-- Name: comment_reactions id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.comment_reactions ALTER COLUMN id SET DEFAULT nextval('public.comment_reactions_id_seq'::regclass);
+
+
+--
+-- TOC entry 4791 (class 2604 OID 32902)
 -- Name: comments id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -268,7 +363,15 @@ ALTER TABLE ONLY public.comments ALTER COLUMN id SET DEFAULT nextval('public.com
 
 
 --
--- TOC entry 4775 (class 2604 OID 32857)
+-- TOC entry 4799 (class 2604 OID 41005)
+-- Name: event_reactions id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.event_reactions ALTER COLUMN id SET DEFAULT nextval('public.event_reactions_id_seq'::regclass);
+
+
+--
+-- TOC entry 4785 (class 2604 OID 32857)
 -- Name: events id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -276,7 +379,7 @@ ALTER TABLE ONLY public.events ALTER COLUMN id SET DEFAULT nextval('public.event
 
 
 --
--- TOC entry 4783 (class 2604 OID 32919)
+-- TOC entry 4795 (class 2604 OID 32919)
 -- Name: rsvps id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -284,7 +387,7 @@ ALTER TABLE ONLY public.rsvps ALTER COLUMN id SET DEFAULT nextval('public.rsvps_
 
 
 --
--- TOC entry 4778 (class 2604 OID 32878)
+-- TOC entry 4790 (class 2604 OID 32878)
 -- Name: tags id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -292,17 +395,39 @@ ALTER TABLE ONLY public.tags ALTER COLUMN id SET DEFAULT nextval('public.tags_id
 
 
 --
--- TOC entry 4954 (class 0 OID 32788)
+-- TOC entry 4981 (class 0 OID 32788)
 -- Dependencies: 218
 -- Data for Name: categories; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.categories (description, name) FROM stdin;
+Lacke jak	Lacke1
+Lacke jak	Lacke2
+Lacke jak	Lacke3
+Lacke jak	Lacke4
+Lacke jak	Lacke5
+Lacke jak	Lacke6
+Lacke jak	Lacke7
+Lacke jak	Lacke8
+Lacke jak	Lacke9
+Lacke jak	Lacke10
+Lacke jak	Lacke11
+Lacke jak	Lacke12
 \.
 
 
 --
--- TOC entry 4961 (class 0 OID 32899)
+-- TOC entry 4992 (class 0 OID 40983)
+-- Dependencies: 229
+-- Data for Name: comment_reactions; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.comment_reactions (id, comment_id, visitor_id, reaction_type, created_at) FROM stdin;
+\.
+
+
+--
+-- TOC entry 4988 (class 0 OID 32899)
 -- Dependencies: 225
 -- Data for Name: comments; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -312,57 +437,93 @@ COPY public.comments (id, author_name, comment_text, created_at, event_id, likes
 
 
 --
--- TOC entry 4959 (class 0 OID 32883)
+-- TOC entry 4994 (class 0 OID 41002)
+-- Dependencies: 231
+-- Data for Name: event_reactions; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.event_reactions (id, event_id, visitor_id, reaction_type, created_at) FROM stdin;
+\.
+
+
+--
+-- TOC entry 4986 (class 0 OID 32883)
 -- Dependencies: 223
 -- Data for Name: event_tags; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.event_tags (event_id, tag_id) FROM stdin;
+10	4
+10	5
+10	6
+11	4
+11	7
+11	6
+11	8
 \.
 
 
 --
--- TOC entry 4956 (class 0 OID 32854)
+-- TOC entry 4983 (class 0 OID 32854)
 -- Dependencies: 220
 -- Data for Name: events; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.events (id, title, description, created_at, event_date, location, views, author_email, category_name, max_capacity) FROM stdin;
+COPY public.events (id, title, description, created_at, event_date, location, views, author_email, category_name, max_capacity, like_count, dislike_count) FROM stdin;
+2	New Event neverica lorem updated	Izmenjen ovaj mnogo jak event jer ide jak gas jos jedan	2025-06-14 15:50:23.200483	2025-05-05 00:00:00	Pancevo	0	admin@gmail.com	Lacke1	5000	0	0
+10	New Event neverica lorem	New event that lorem ipsum opala malena lorem ipsum	2025-06-15 01:53:57.119479	2025-11-11 00:00:00	Nova Pazova	0	lacke123@gmail.com	Lacke1	\N	0	0
+11	Jel ce da radi	New event that lorem ipsum opala malena lorem ipsum	2025-06-15 02:22:14.736968	2025-11-11 00:00:00	Nova Pazova	0	lacke123@gmail.com	Lacke1	\N	0	0
 \.
 
 
 --
--- TOC entry 4963 (class 0 OID 32916)
+-- TOC entry 4990 (class 0 OID 32916)
 -- Dependencies: 227
 -- Data for Name: rsvps; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.rsvps (id, user_email, event_id, rsvp_date) FROM stdin;
+COPY public.rsvps (id, event_id, rsvp_date, user_name) FROM stdin;
 \.
 
 
 --
--- TOC entry 4958 (class 0 OID 32875)
+-- TOC entry 4985 (class 0 OID 32875)
 -- Dependencies: 222
 -- Data for Name: tags; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.tags (id, name) FROM stdin;
+4	Metal
+5	Rock
+6	HIPHIP
+7	Country
+8	Rap
 \.
 
 
 --
--- TOC entry 4953 (class 0 OID 32781)
+-- TOC entry 4980 (class 0 OID 32781)
 -- Dependencies: 217
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.users (email, name, last_name, user_type, status, password) FROM stdin;
+admin@gmail.com	admin	admin	ADMIN	ACTIVE	$2b$10$9vU7wpNBmrE80ZYFVD5SFOgSl.w2HWGqrN0Qcvd45KnN7QjnOubOm
+lacke123@gmail.com	LackeNovi	Kojic	EVENT_CREATOR	ACTIVE	$2b$10$yUiHavOppBThPaC0fj75S.gTyG7HuyuI/OoSJdxnZCSlAFm3os6CO
 \.
 
 
 --
--- TOC entry 4973 (class 0 OID 0)
+-- TOC entry 5006 (class 0 OID 0)
+-- Dependencies: 228
+-- Name: comment_reactions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.comment_reactions_id_seq', 1, false);
+
+
+--
+-- TOC entry 5007 (class 0 OID 0)
 -- Dependencies: 224
 -- Name: comments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -371,16 +532,25 @@ SELECT pg_catalog.setval('public.comments_id_seq', 1, false);
 
 
 --
--- TOC entry 4974 (class 0 OID 0)
+-- TOC entry 5008 (class 0 OID 0)
+-- Dependencies: 230
+-- Name: event_reactions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.event_reactions_id_seq', 1, false);
+
+
+--
+-- TOC entry 5009 (class 0 OID 0)
 -- Dependencies: 219
 -- Name: events_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.events_id_seq', 1, false);
+SELECT pg_catalog.setval('public.events_id_seq', 11, true);
 
 
 --
--- TOC entry 4975 (class 0 OID 0)
+-- TOC entry 5010 (class 0 OID 0)
 -- Dependencies: 226
 -- Name: rsvps_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -389,16 +559,16 @@ SELECT pg_catalog.setval('public.rsvps_id_seq', 1, false);
 
 
 --
--- TOC entry 4976 (class 0 OID 0)
+-- TOC entry 5011 (class 0 OID 0)
 -- Dependencies: 221
 -- Name: tags_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.tags_id_seq', 1, false);
+SELECT pg_catalog.setval('public.tags_id_seq', 8, true);
 
 
 --
--- TOC entry 4788 (class 2606 OID 32852)
+-- TOC entry 4806 (class 2606 OID 32852)
 -- Name: categories categories_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -407,7 +577,25 @@ ALTER TABLE ONLY public.categories
 
 
 --
--- TOC entry 4798 (class 2606 OID 32909)
+-- TOC entry 4820 (class 2606 OID 40994)
+-- Name: comment_reactions comment_reactions_comment_id_visitor_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.comment_reactions
+    ADD CONSTRAINT comment_reactions_comment_id_visitor_id_key UNIQUE (comment_id, visitor_id);
+
+
+--
+-- TOC entry 4822 (class 2606 OID 40992)
+-- Name: comment_reactions comment_reactions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.comment_reactions
+    ADD CONSTRAINT comment_reactions_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4816 (class 2606 OID 32909)
 -- Name: comments comments_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -416,7 +604,25 @@ ALTER TABLE ONLY public.comments
 
 
 --
--- TOC entry 4796 (class 2606 OID 32887)
+-- TOC entry 4824 (class 2606 OID 41013)
+-- Name: event_reactions event_reactions_event_id_visitor_id_reaction_type_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.event_reactions
+    ADD CONSTRAINT event_reactions_event_id_visitor_id_reaction_type_key UNIQUE (event_id, visitor_id, reaction_type);
+
+
+--
+-- TOC entry 4826 (class 2606 OID 41011)
+-- Name: event_reactions event_reactions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.event_reactions
+    ADD CONSTRAINT event_reactions_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4814 (class 2606 OID 32887)
 -- Name: event_tags event_tags_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -425,7 +631,7 @@ ALTER TABLE ONLY public.event_tags
 
 
 --
--- TOC entry 4790 (class 2606 OID 32863)
+-- TOC entry 4808 (class 2606 OID 32863)
 -- Name: events events_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -434,7 +640,7 @@ ALTER TABLE ONLY public.events
 
 
 --
--- TOC entry 4800 (class 2606 OID 32922)
+-- TOC entry 4818 (class 2606 OID 32922)
 -- Name: rsvps rsvps_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -443,7 +649,7 @@ ALTER TABLE ONLY public.rsvps
 
 
 --
--- TOC entry 4792 (class 2606 OID 32882)
+-- TOC entry 4810 (class 2606 OID 32882)
 -- Name: tags tags_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -452,7 +658,7 @@ ALTER TABLE ONLY public.tags
 
 
 --
--- TOC entry 4794 (class 2606 OID 32880)
+-- TOC entry 4812 (class 2606 OID 32880)
 -- Name: tags tags_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -461,7 +667,7 @@ ALTER TABLE ONLY public.tags
 
 
 --
--- TOC entry 4786 (class 2606 OID 32787)
+-- TOC entry 4804 (class 2606 OID 32787)
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -470,7 +676,16 @@ ALTER TABLE ONLY public.users
 
 
 --
--- TOC entry 4805 (class 2606 OID 32910)
+-- TOC entry 4833 (class 2606 OID 40995)
+-- Name: comment_reactions comment_reactions_comment_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.comment_reactions
+    ADD CONSTRAINT comment_reactions_comment_id_fkey FOREIGN KEY (comment_id) REFERENCES public.comments(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 4831 (class 2606 OID 32910)
 -- Name: comments comments_event_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -479,7 +694,16 @@ ALTER TABLE ONLY public.comments
 
 
 --
--- TOC entry 4803 (class 2606 OID 32888)
+-- TOC entry 4834 (class 2606 OID 41014)
+-- Name: event_reactions event_reactions_event_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.event_reactions
+    ADD CONSTRAINT event_reactions_event_id_fkey FOREIGN KEY (event_id) REFERENCES public.events(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 4829 (class 2606 OID 32888)
 -- Name: event_tags event_tags_event_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -488,7 +712,7 @@ ALTER TABLE ONLY public.event_tags
 
 
 --
--- TOC entry 4804 (class 2606 OID 32893)
+-- TOC entry 4830 (class 2606 OID 32893)
 -- Name: event_tags event_tags_tag_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -497,7 +721,7 @@ ALTER TABLE ONLY public.event_tags
 
 
 --
--- TOC entry 4801 (class 2606 OID 32864)
+-- TOC entry 4827 (class 2606 OID 32864)
 -- Name: events events_author_email_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -506,7 +730,7 @@ ALTER TABLE ONLY public.events
 
 
 --
--- TOC entry 4802 (class 2606 OID 32869)
+-- TOC entry 4828 (class 2606 OID 32869)
 -- Name: events events_category_name_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -515,7 +739,7 @@ ALTER TABLE ONLY public.events
 
 
 --
--- TOC entry 4806 (class 2606 OID 32928)
+-- TOC entry 4832 (class 2606 OID 32928)
 -- Name: rsvps rsvps_event_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -523,16 +747,7 @@ ALTER TABLE ONLY public.rsvps
     ADD CONSTRAINT rsvps_event_id_fkey FOREIGN KEY (event_id) REFERENCES public.events(id) ON DELETE CASCADE;
 
 
---
--- TOC entry 4807 (class 2606 OID 32923)
--- Name: rsvps rsvps_user_email_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.rsvps
-    ADD CONSTRAINT rsvps_user_email_fkey FOREIGN KEY (user_email) REFERENCES public.users(email);
-
-
--- Completed on 2025-05-31 15:30:25
+-- Completed on 2025-06-15 02:33:09
 
 --
 -- PostgreSQL database dump complete
