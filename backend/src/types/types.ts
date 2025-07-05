@@ -32,7 +32,7 @@ export interface EventType {
     title: string;
     description: string;
     createdAt: string;
-    event_date: string;
+    eventDate: string;
     location: string;
     views: number;
     authorEmail: string;
@@ -60,4 +60,9 @@ export type TotalCount = {
 export interface TagType {
     id: string;
     name: string;
+}
+
+export interface TagJoinedType {
+    name: string;
+    eventId: string;
 }

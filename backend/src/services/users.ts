@@ -1,26 +1,32 @@
 import { query } from "../utils/db";
 import { ActivityStatus, User } from "../types/types";
 
-export const getUserByEmail = async (email: string) => {
-    const user: User[] = await query(`SELECT email, name, last_name AS "lastName", user_type AS "userType", status, password FROM users WHERE email = $1`, [email]);
-    return user;
+export const getUserByEmail = (email: string) => {
+    return query(`SELECT email, name, last_name AS "lastName", user_type AS "userType", status, password
+                  FROM users
+                  WHERE email = $1`, [email]);
 };
 
-export const addUser = async (user: User) => {
+export const addUser = (user: User) => {
     const { email, name, lastName, userType, status, password } = user;
 
-    await query(
+    return query(
         "INSERT INTO users (email, name, last_name, user_type, status, password) VALUES ($1, $2, $3, $4, $5, $6)",
         [email, name, lastName, userType, status, password]
     );
 };
 
-export const fetchAllUsers = async () => {
-    const users: User[] = await query(`SELECT email, name, last_name AS "lastName", user_type AS "userType", status, password FROM users`);
-    return users;
+export const fetchAllUsers = () => {
+    return query(`SELECT email,
+                         name,
+                         last_name AS "lastName",
+                         user_type AS "userType",
+                         status,
+                         password
+                  FROM users`);
 };
 
-export const updateUserInfo = async (email: string, updates: Partial<User>) => {
+export const updateUserInfo = (email: string, updates: Partial<User>) => {
     const updateFields: string[] = [];
     const values: any[] = [];
     let paramCounter = 1;
@@ -53,11 +59,11 @@ export const updateUserInfo = async (email: string, updates: Partial<User>) => {
     const sql = `UPDATE users
                  SET ${updateFields.join(", ")}
                  WHERE email = $${paramCounter}`;
-    await query(sql, values);
+    return query(sql, values);
 };
 
-export const updateUserActivityStatus = async (email: string, status: ActivityStatus) => {
-    await query(
+export const updateUserActivityStatus = (email: string, status: ActivityStatus) => {
+    return query(
         "UPDATE users SET status = $1 WHERE email = $2",
         [status, email]
     );

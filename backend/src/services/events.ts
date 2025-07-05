@@ -1,23 +1,20 @@
 import { query } from "../utils/db";
-import { EventDTO, EventType, TotalCount } from "../types/types";
+import { EventDTO } from "../types/types";
 
-const mapEventFromDB = (event: any): EventType => {
-    return {
-        id: event.id,
-        title: event.title,
-        description: event.description,
-        createdAt: event.created_at,
-        event_date: event.event_date,
-        location: event.location,
-        views: event.views,
-        authorEmail: event.author_email,
-        categoryName: event.category_name,
-        maxCapacity: event.max_capacity,
-        likeCount: event.like_count,
-        dislikeCount: event.dislike_count,
-        tags: event.tags
-    };
-};
+const selectAllSQL = `
+    id,
+    title,
+    description,
+    created_at    AS "createdAt",
+    event_date    AS "eventDate",
+    location,
+    views,
+    author_email  AS "authorEmail",
+    category_name AS "categoryName",
+    max_capacity  AS "maxCapacity",
+    like_count    AS "likeCount",
+    dislike_count AS "dislikeCount"
+`;
 
 export const fetchEvents = async (offset: number = 0, limit: number, search?: string) => {
     let queryString = '';
@@ -25,12 +22,12 @@ export const fetchEvents = async (offset: number = 0, limit: number, search?: st
     let queryStringParams = [];
 
     if (search) {
-        queryString = ` SELECT *
-                        FROM events
-                        WHERE title ILIKE $1
-                           OR description ILIKE $1
-                        ORDER BY created_at DESC LIMIT $2
-                        OFFSET $3`;
+        queryString = `SELECT ${selectAllSQL}
+                       FROM events
+                       WHERE title ILIKE $1
+                          OR description ILIKE $1
+                       ORDER BY created_at DESC LIMIT $2
+                       OFFSET $3`;
 
         countQuery = ` SELECT COUNT(*)
                        FROM events
@@ -39,7 +36,7 @@ export const fetchEvents = async (offset: number = 0, limit: number, search?: st
 
         queryStringParams = [`%${search}%`, limit, offset];
     } else {
-        queryString = `SELECT *
+        queryString = `SELECT ${selectAllSQL}
                        FROM events
                        ORDER BY created_at DESC LIMIT $1
                        OFFSET $2`;
@@ -50,35 +47,31 @@ export const fetchEvents = async (offset: number = 0, limit: number, search?: st
         queryStringParams = [limit, offset];
     }
 
-    const eventsFromDB: EventType[] = await query(queryString, queryStringParams);
-    const total: TotalCount[] = await query(
+    const eventsFromDB = await query(queryString, queryStringParams);
+    const totalFromDB = await query(
         countQuery,
         search ? [`%${search}%`] : []
     );
 
-    const events = eventsFromDB.map(event => mapEventFromDB(event));
-
-    return { events, total: Number(total[0].count) };
+    return { eventsFromDB, totalFromDB };
 };
 
-export const createEvent = async (userEmail: string, title: string, description: string, eventDate: string, location: string, category: string, maxCapacity?: number) => {
+export const createEvent = (userEmail: string, title: string, description: string, eventDate: string, location: string, category: string, maxCapacity?: number) => {
     const queryString = `INSERT INTO events (author_email, title, description, event_date, location, category_name,
                                              max_capacity)
                          VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`;
     const values = [userEmail, title, description, eventDate, location, category, maxCapacity || null];
 
-    const result = await query(queryString, values);
-    return mapEventFromDB(result[0]);
+    return query(queryString, values);
 };
 
-export const getEventById = async (id: string) => {
-    const queryString = `SELECT *
+export const getEventById = (id: string) => {
+    const queryString = `SELECT ${selectAllSQL}
                          FROM events
                          WHERE id = $1`;
     const values = [id];
 
-    const result: EventType[] = await query(queryString, values);
-    return mapEventFromDB(result[0]);
+    return query(queryString, values);
 };
 
 export const modifyEvent = async (id: string, eventData: Partial<EventDTO>) => {
@@ -128,28 +121,39 @@ export const modifyEvent = async (id: string, eventData: Partial<EventDTO>) => {
         WHERE id = $1 RETURNING *
     `;
 
-    const modifiedEvent = await query(queryText, params);
-
-    return {
-        event: mapEventFromDB(modifiedEvent[0]),
-    };
+    return query(queryText, params);
 };
 
-export const getEventBasedOnCategory = async (name: string) => {
-    const queryString = `SELECT *
+export const getEventBasedOnCategory = (name: string) => {
+    const queryString = `SELECT ${selectAllSQL}
                          FROM events
-                         WHERE category_name = $1`;
+                         WHERE category_name  = $1`;
     const values = [name];
 
-    const result: EventType[] = await query(queryString, values);
-    return mapEventFromDB(result);
+    return query(queryString, values);
 };
 
-export const removeEvent = async (id: string) => {
+export const removeEvent = (id: string) => {
     const queryString = `DELETE
                          FROM events
                          WHERE id = $1`;
     const values = [id];
 
-    await query(queryString, values);
+    return query(queryString, values);
+};
+
+export const fetchNewestEvents = (limit: number = 10) => {
+    const queryString = `SELECT ${selectAllSQL}
+                         FROM events
+                         ORDER BY created_at DESC
+                             LIMIT $1`;
+    const values = [limit];
+    return query(queryString, values);
+};
+
+export const fetchAllEventTags = () => {
+    const queryString = `SELECT event_id  AS "eventId",
+                                tags.name AS "tagName"
+                         FROM event_tags`;
+    return query(queryString);
 };

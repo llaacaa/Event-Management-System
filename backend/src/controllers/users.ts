@@ -11,21 +11,36 @@ export const registerUser = async (req: Request, res: Response) => {
     if (!email || !password || !name || !lastName) {
         const message = "Please provide all required fields: email, name, lastName, and password.";
         return res.status(400).json({
-            message,
+            success: false,
+            error: {
+                message,
+            }
         });
     }
 
     if (!isValidEmail(email)) {
         return res.status(400).json({
-            message: "Invalid email format.",
+            success: false,
+            error: {
+                message: "Invalid email format.",
+            }
         });
     }
 
-    const user = await getUserByEmail(email);
+    const userFromDB = await getUserByEmail(email);
+
+    if (!userFromDB.success) {
+        return res.status(userFromDB.status || 500).json({ success: false, error: userFromDB.error, });
+    }
+
+    const user: User[] = userFromDB.data;
 
     if (user.length !== 0) {
         return res.status(400).json({
-            message: "User already registered",
+            success: false,
+            error: {
+                message: "User already registered",
+            }
         });
     }
 
@@ -42,6 +57,7 @@ export const registerUser = async (req: Request, res: Response) => {
     await addUser(newUser);
 
     return res.status(201).json({
+        success: true,
         message: "User registered successfully!",
     });
 };
@@ -52,11 +68,20 @@ export const loginUser = async (req: Request, res: Response) => {
     if (!email || !password) {
         const message = "Please provide all required fields: email and password.";
         return res.status(400).json({
-            message,
+            success: false,
+            error: {
+                message,
+            }
         });
     }
 
-    const searchUser: User[] = await getUserByEmail(email);
+    const searchUserFromDB = await getUserByEmail(email);
+
+    if (!searchUserFromDB.success) {
+        return res.status(searchUserFromDB.status || 500).json({ success: false, error: searchUserFromDB.error });
+    }
+
+    const searchUser: User[] = searchUserFromDB.data;
 
     const isPasswordValid = await Encrypt.comparePassword(
         password,
@@ -65,13 +90,19 @@ export const loginUser = async (req: Request, res: Response) => {
 
     if (searchUser.length == 0 || !isPasswordValid) {
         return res.status(400).json({
-            message: "Email or password incorrect.",
+            success: false,
+            error: {
+                message: "Email or password incorrect.",
+            }
         });
     }
 
     if (searchUser[0].status === UserStatus.NOT_ACTIVE) {
         return res.status(403).json({
-            message: "User is not active.",
+            success: false,
+            error: {
+                message: "User is not active.",
+            }
         });
     }
 
@@ -96,10 +127,18 @@ export const loginUser = async (req: Request, res: Response) => {
 };
 
 export const getAllUsers = async (req: Request, res: Response) => {
-    const users: User[] = await fetchAllUsers();
+    const usersFromDB = await fetchAllUsers();
+
+    if (!usersFromDB.success) {
+        return res.status(usersFromDB.status || 500).json({ success: false, error: usersFromDB.error });
+    }
+
+    const users: User[] = usersFromDB.data;
 
     res.status(200).json({
-        users
+        success: true,
+        message: "Users fetched successfully",
+        data: users
     });
 };
 
@@ -108,15 +147,27 @@ export const updateUser = async (req: Request, res: Response) => {
 
     if (!email) {
         return res.status(400).json({
-            message: "Email is required to identify the user"
+            success: false,
+            error: {
+                message: "Email is required to identify the user"
+            }
         });
     }
 
-    const existingUser = await getUserByEmail(email);
+    const existingUserFromDB = await getUserByEmail(email);
+
+    if (!existingUserFromDB.success) {
+        return res.status(existingUserFromDB.status || 500).json({ success: false, error: existingUserFromDB.error });
+    }
+
+    const existingUser: User[] = existingUserFromDB.data;
 
     if (existingUser.length === 0) {
         return res.status(404).json({
-            message: "User not found"
+            success: false,
+            error: {
+                message: "User not found"
+            }
         });
     }
 
@@ -127,9 +178,26 @@ export const updateUser = async (req: Request, res: Response) => {
         updates.userType = userType;
     }
 
-    await updateUserInfo(email, updates);
+    const updateResponseFromDB = await updateUserInfo(email, updates);
+
+    if (!updateResponseFromDB) {
+        return res.status(400).json({
+            success: false,
+            error: {
+                message: "No updates provided or invalid user type"
+            }
+        });
+    }
+
+    if (!updateResponseFromDB.success) {
+        return res.status(updateResponseFromDB.status || 500).json({
+            success: false,
+            error: updateResponseFromDB.error
+        });
+    }
 
     return res.status(200).json({
+        success: true,
         message: "User updated successfully"
     });
 };
@@ -139,27 +207,43 @@ export const updateUserStatus = async (req: Request, res: Response) => {
 
     if (!email) {
         return res.status(400).json({
-            message: "Email is required to identify the user"
+            success: false,
+            error: {
+                message: "Email is required to identify the user"
+            }
         });
     }
 
     if (!status || !Object.values(UserStatus).includes(status)) {
         return res.status(400).json({
-            message: "Valid status is required"
+            success: false,
+            error: {
+                message: "Valid status is required"
+            }
         });
     }
 
-    const existingUser = await getUserByEmail(email);
+    const existingUserFromDB = await getUserByEmail(email);
+
+    if (!existingUserFromDB.success) {
+        return res.status(existingUserFromDB.status || 500).json({ success: false, error: existingUserFromDB.error });
+    }
+
+    const existingUser: User[] = existingUserFromDB.data;
 
     if (existingUser.length === 0) {
         return res.status(404).json({
-            message: "User not found"
+            success: false,
+            error: {
+                message: "User not found"
+            }
         });
     }
 
     await updateUserActivityStatus(email, status);
 
     return res.status(200).json({
+        success: true,
         message: `User status updated to ${status} successfully`
     });
 };
