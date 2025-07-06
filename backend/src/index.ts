@@ -6,6 +6,8 @@ import categoriesRouter from "./routes/categories";
 import eventsRouter from "./routes/events";
 import cookieParser from 'cookie-parser';
 import { initAdmin } from "./utils/db";
+import { checkVisitorCookie } from "./middlewares/checkVisitorCookie";
+import commentsRouter from "./routes/comments";
 
 dotenv.config();
 
@@ -34,9 +36,12 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use(checkVisitorCookie);
+
 app.use("/users", usersRouter);
 app.use("/categories", categoriesRouter);
 app.use("/events", eventsRouter);
+app.use("/comments/:id", commentsRouter);
 
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);

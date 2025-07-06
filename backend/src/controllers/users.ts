@@ -109,7 +109,7 @@ export const loginUser = async (req: Request, res: Response) => {
     const token = jsonWebToken.generateToken(searchUser[0].email);
 
     res.cookie("token", token, {
-        // httpOnly: true,
+        httpOnly: true,
         path: "/",
         domain: "localhost",
     });

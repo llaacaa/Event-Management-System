@@ -1,5 +1,5 @@
 import { query } from "../utils/db";
-import { EventDTO } from "../types/types";
+import { EventDTO, EventReactionType } from "../types/types";
 
 const selectAllSQL = `
     id,
@@ -127,7 +127,7 @@ export const modifyEvent = async (id: string, eventData: Partial<EventDTO>) => {
 export const getEventBasedOnCategory = (name: string) => {
     const queryString = `SELECT ${selectAllSQL}
                          FROM events
-                         WHERE category_name  = $1`;
+                         WHERE category_name = $1`;
     const values = [name];
 
     return query(queryString, values);
@@ -151,9 +151,71 @@ export const fetchNewestEvents = (limit: number = 10) => {
     return query(queryString, values);
 };
 
-export const fetchAllEventTags = () => {
-    const queryString = `SELECT event_id  AS "eventId",
-                                tags.name AS "tagName"
-                         FROM event_tags`;
-    return query(queryString);
+export const fetchMostPopularEvents = (limit: number = 10) => {
+    const queryString = `SELECT ${selectAllSQL}
+                         FROM events
+                         ORDER BY like_count DESC, dislike_count ASC
+                             LIMIT $1`;
+    const values = [limit];
+    return query(queryString, values);
+};
+
+export const createEventReaction = (eventId: string, visitorId: string, reactionType: EventReactionType) => {
+    const queryString = `INSERT INTO event_reactions (event_id, visitor_id, reaction_type)
+                         VALUES ($1, $2, $3) RETURNING *`;
+
+    const values = [eventId, visitorId, reactionType];
+
+    return query(queryString, values);
+};
+
+export const incrementEventViews = (id: string) => {
+    const queryString = `UPDATE events
+                         SET views = views + 1
+                         WHERE id = $1 RETURNING *`;
+    const values = [id];
+
+    return query(queryString, values);
+};
+
+export const updateEventLikes = (id: string, operator: "+" | "-") => {
+    const queryString = `UPDATE events
+                         SET like_count = like_count ${operator} 1
+                         WHERE id = $1 RETURNING *`;
+    const values = [id];
+
+    return query(queryString, values);
+};
+
+export const updateEventDislikes = (id: string, operator: "+" | "-") => {
+    const queryString = `UPDATE events
+                         SET dislike_count = dislike_count ${operator} 1
+                         WHERE id = $1 RETURNING *`;
+    const values = [id];
+
+    return query(queryString, values);
+};
+
+export const getEventReactionsForVisitor = (eventId: string, visitorId: string, includeViews = false) => {
+    const additionalQuery = includeViews ? "" : "AND reaction_type IN ('LIKE', 'DISLIKE')";
+
+    const queryString = `SELECT reaction_type as "reactionType"
+                         FROM event_reactions
+                         WHERE event_id = $1
+                           AND visitor_id = $2 ${additionalQuery}`;
+    const values = [eventId, visitorId];
+
+    return query(queryString, values);
+};
+
+export const removeEventReaction = (eventId: string, visitorId: string) => {
+    const queryString = `DELETE
+                         FROM event_reactions
+                         WHERE event_id = $1
+                           AND visitor_id = $2
+                           AND reaction_type IN ('LIKE', 'DISLIKE')`;
+
+    const values = [eventId, visitorId];
+
+    return query(queryString, values);
 };

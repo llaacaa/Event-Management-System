@@ -1,3 +1,5 @@
+// @ts-ignore
+
 export enum UserType {
     ADMIN = 'ADMIN',
     EVENT_CREATOR = 'EVENT_CREATOR',
@@ -65,4 +67,15 @@ export interface TagType {
 export interface TagJoinedType {
     name: string;
     eventId: string;
+}
+
+export enum EventReactionType {
+    LIKE = 'LIKE',
+    DISLIKE = 'DISLIKE',
+    VIEW = 'VIEW'
+}
+
+export enum CommentReactionType {
+    LIKE = 'LIKE',
+    DISLIKE = 'DISLIKE'
 }
