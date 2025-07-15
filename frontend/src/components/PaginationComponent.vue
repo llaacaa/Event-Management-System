@@ -15,7 +15,7 @@ const props = defineProps({
 const emit = defineEmits(['update:currentPage']);
 const { totalItems, currentPage } = toRefs(props);
 
-const totalPages = computed(() => Math.ceil(totalItems.value / 4));
+const totalPages = computed(() => Math.ceil(totalItems.value / 10));
 
 const changePage = (page: number) => {
   if (page > 0 && page <= totalPages.value && page !== currentPage.value) {

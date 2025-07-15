@@ -5,7 +5,7 @@ import PaginationComponent from "@/components/PaginationComponent.vue";
 
 const isLoading = ref(false);
 const currentPage = ref(1);
-const itemsPerPage = 4;
+const itemsPerPage = 10;
 
 const allCards = ref([
   {
@@ -47,6 +47,26 @@ const allCards = ref([
     title: "Community",
     subtitle: "Join our network",
     text: "Connect with other users and share your experiences and tips."
+  }, {
+    title: "Community",
+    subtitle: "Join our network",
+    text: "Connect with other users and share your experiences and tips."
+  }, {
+    title: "Community",
+    subtitle: "Join our network",
+    text: "Connect with other users and share your experiences and tips."
+  }, {
+    title: "Community",
+    subtitle: "Join our network",
+    text: "Connect with other users and share your experiences and tips."
+  }, {
+    title: "Community",
+    subtitle: "Join our network",
+    text: "Connect with other users and share your experiences and tips."
+  }, {
+    title: "Community",
+    subtitle: "Join our network",
+    text: "Connect with other users and share your experiences and tips."
   },
   {
     title: "Feedback",
@@ -84,28 +104,33 @@ const handleCardClick = (index: number) => {
         :currentPage="currentPage"
         @update:current-page="changePage"
     />
+    <div>
 
-    <div class="cards-grid">
-      <div v-for="(card, index) in cards" :key="index" class="card-wrapper">
-        <Card
-            :title="card.title"
-            :subtitle="card.subtitle"
-            :text="card.text"
-            :loading="isLoading"
-            @cardClick=handleCardClick(index)
-        >
-          <template v-slot:actions>
-            <v-btn variant="text" color="primary">Learn More</v-btn>
-          </template>
-        </Card>
+      <div class="fade-container">
+        <div class="cards-grid">
+          <div v-for="(card, index) in cards" :key="index" class="card-wrapper">
+            <Card
+                :title="card.title"
+                :subtitle="card.subtitle"
+                :text="card.text"
+                :loading="isLoading"
+                @cardClick=handleCardClick(index)
+            >
+              <template v-slot:actions>
+                <v-btn variant="text" color="primary">Learn More</v-btn>
+              </template>
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
+<!--suppress CssInvalidPropertyValue -->
 <style scoped>
 .home-container {
-  max-width: 1200px;
+  max-width: 1300px;
   margin: 0 auto;
   padding: 20px;
 }
@@ -121,7 +146,34 @@ const handleCardClick = (index: number) => {
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
-  gap: 20px;
+  gap: 35px;
+  max-height: 73vh;
+  overflow-y: scroll;
+  padding-right: 32px;
+  padding-left: 7rem;
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+.fade-container {
+  position: relative;
+  mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
+}
+
+.cards-grid::-webkit-scrollbar {
+  width: 5rem;
+}
+
+.cards-grid::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+.cards-grid::-webkit-scrollbar-thumb {
+  background-image: url('@/assets/scroll-bar.png'); /* Update path based on your project structure */
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: fit;
 }
 
 .card-wrapper {

@@ -1,130 +1,128 @@
 /* Modern color palette */
 :root {
-  /* Primary colors */
-  --primary-color: #3a86ff;
-  --primary-dark: #2667cc;
-  --primary-light: #61a0ff;
+    /* Primary colors */
+    --primary-color: #3a86ff;
+    --primary-dark: #2667cc;
+    --primary-light: #61a0ff;
 
-  /* Secondary colors */
-  --secondary-color: #4cc9f0;
-  --secondary-dark: #30a8d5;
-  --secondary-light: #72dbff;
+    /* Secondary colors */
+    --secondary-color: #4cc9f0;
+    --secondary-dark: #30a8d5;
+    --secondary-light: #72dbff;
 
-  /* Neutral colors */
-  --neutral-100: #ffffff;
-  --neutral-200: #f9fafb;
-  --neutral-300: #f1f5f9;
-  --neutral-400: #e2e8f0;
-  --neutral-500: #cbd5e1;
-  --neutral-600: #94a3b8;
-  --neutral-700: #64748b;
-  --neutral-800: #334155;
-  --neutral-900: #1e293b;
-  --neutral-950: #0f172a;
+    /* Neutral colors */
+    --neutral-100: #ffffff;
+    --neutral-200: #f9fafb;
+    --neutral-300: #f1f5f9;
+    --neutral-400: #e2e8f0;
+    --neutral-500: #cbd5e1;
+    --neutral-600: #94a3b8;
+    --neutral-700: #64748b;
+    --neutral-800: #334155;
+    --neutral-900: #1e293b;
+    --neutral-950: #0f172a;
 
-  /* Color mappings */
-  --vt-c-white: var(--neutral-100);
-  --vt-c-white-soft: var(--neutral-200);
-  --vt-c-white-mute: var(--neutral-300);
+    /* Color mappings */
+    --vt-c-white: var(--neutral-100);
+    --vt-c-white-soft: var(--neutral-200);
+    --vt-c-white-mute: var(--neutral-300);
 
-  --vt-c-black: var(--neutral-950);
-  --vt-c-black-soft: var(--neutral-900);
-  --vt-c-black-mute: var(--neutral-800);
+    --vt-c-black: var(--neutral-950);
+    --vt-c-black-soft: var(--neutral-900);
+    --vt-c-black-mute: var(--neutral-800);
 
-  --vt-c-indigo: var(--primary-color);
+    --vt-c-indigo: var(--primary-color);
 
-  --vt-c-divider-light-1: rgba(100, 116, 139, 0.2);
-  --vt-c-divider-light-2: rgba(100, 116, 139, 0.1);
-  --vt-c-divider-dark-1: rgba(148, 163, 184, 0.65);
-  --vt-c-divider-dark-2: rgba(148, 163, 184, 0.48);
+    --vt-c-divider-light-1: rgba(100, 116, 139, 0.2);
+    --vt-c-divider-light-2: rgba(100, 116, 139, 0.1);
+    --vt-c-divider-dark-1: rgba(148, 163, 184, 0.65);
+    --vt-c-divider-dark-2: rgba(148, 163, 184, 0.48);
 
-  --vt-c-text-light-1: var(--neutral-900);
-  --vt-c-text-light-2: var(--neutral-700);
-  --vt-c-text-dark-1: var(--neutral-100);
-  --vt-c-text-dark-2: var(--neutral-400);
+    --vt-c-text-light-1: var(--neutral-900);
+    --vt-c-text-light-2: var(--neutral-700);
+    --vt-c-text-dark-1: var(--neutral-100);
+    --vt-c-text-dark-2: var(--neutral-400);
 }
 
 /* semantic color variables for this project */
 :root {
-  --color-background: var(--neutral-200);
-  --color-background-soft: var(--neutral-100);
-  --color-background-mute: var(--neutral-300);
+    --color-background: var(--neutral-200);
+    --color-background-soft: var(--neutral-100);
+    --color-background-mute: var(--neutral-300);
 
-  --color-border: var(--vt-c-divider-light-2);
-  --color-border-hover: var(--vt-c-divider-light-1);
+    --color-border: var(--vt-c-divider-light-2);
+    --color-border-hover: var(--vt-c-divider-light-1);
 
-  --color-heading: var(--primary-color);
-  --color-text: var(--neutral-800);
-  --color-accent: var(--secondary-color);
+    --color-heading: var(--primary-color);
+    --color-text: var(--neutral-800);
+    --color-accent: var(--secondary-color);
 
-  --section-gap: 160px;
+    --section-gap: 160px;
 
-  /* Card styling variables */
-  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-  --card-radius: 0.75rem;
+    /* Card styling variables */
+    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    --card-radius: 0.75rem;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --color-background: var(--neutral-900);
-    --color-background-soft: var(--neutral-950);
-    --color-background-mute: var(--neutral-800);
+    :root {
+        --color-background: var(--neutral-900);
+        --color-background-soft: var(--neutral-950);
+        --color-background-mute: var(--neutral-800);
 
-    --color-border: var(--vt-c-divider-dark-2);
-    --color-border-hover: var(--vt-c-divider-dark-1);
+        --color-border: var(--vt-c-divider-dark-2);
+        --color-border-hover: var(--vt-c-divider-dark-1);
 
-    --color-heading: var(--primary-light);
-    --color-text: var(--neutral-300);
-    --color-accent: var(--secondary-light);
+        --color-heading: var(--primary-light);
+        --color-text: var(--neutral-300);
+        --color-accent: var(--secondary-light);
 
-    /* Dark mode card shadow */
-    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
-  }
+        /* Dark mode card shadow */
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+    }
 }
 
 *,
 *::before,
 *::after {
-  box-sizing: border-box;
-  margin: 0;
-  font-weight: normal;
+    box-sizing: border-box;
+    margin: 0;
+    font-weight: normal;
 }
 
 body {
-  min-height: 100vh;
-  color: var(--color-text);
-  background: linear-gradient(
-          to bottom right,
-          var(--color-background),
-          var(--color-background-mute)
-  );
-  background-attachment: fixed;
-  transition:
-          color 0.5s,
-          background-color 0.5s;
-  line-height: 1.6;
-  font-family:
-          'Inter',
-          -apple-system,
-          BlinkMacSystemFont,
-          'Segoe UI',
-          Roboto,
-          Oxygen,
-          Ubuntu,
-          Cantarell,
-          'Fira Sans',
-          'Droid Sans',
-          'Helvetica Neue',
-          sans-serif;
-  font-size: 16px;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+    color: var(--color-text);
+    background: linear-gradient(
+            to bottom right,
+            var(--color-background),
+            var(--color-background-mute)
+    );
+    background-attachment: fixed;
+    transition: color 0.5s,
+    background-color 0.5s;
+    line-height: 1.6;
+    font-family: 'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    'Fira Sans',
+    'Droid Sans',
+    'Helvetica Neue',
+    sans-serif;
+    font-size: 16px;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  color: var(--color-heading);
-  font-weight: 600;
-  line-height: 1.25;
-  margin-bottom: 0.75em;
+    color: var(--color-heading);
+    font-weight: 600;
+    line-height: 1.25;
+    margin-bottom: 0.75em;
 }
