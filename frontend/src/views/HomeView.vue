@@ -104,23 +104,20 @@ const handleCardClick = (index: number) => {
         :currentPage="currentPage"
         @update:current-page="changePage"
     />
-    <div>
-
-      <div class="fade-container">
-        <div class="cards-grid">
-          <div v-for="(card, index) in cards" :key="index" class="card-wrapper">
-            <Card
-                :title="card.title"
-                :subtitle="card.subtitle"
-                :text="card.text"
-                :loading="isLoading"
-                @cardClick=handleCardClick(index)
-            >
-              <template v-slot:actions>
-                <v-btn variant="text" color="primary">Learn More</v-btn>
-              </template>
-            </Card>
-          </div>
+    <div class="fade-container">
+      <div class="cards-grid">
+        <div v-for="(card, index) in cards" :key="index" class="card-wrapper">
+          <Card
+              :title="card.title"
+              :subtitle="card.subtitle"
+              :text="card.text"
+              :loading="isLoading"
+              @cardClick=handleCardClick(index)
+          >
+            <template v-slot:actions>
+              <v-btn variant="text" color="primary">Learn More</v-btn>
+            </template>
+          </Card>
         </div>
       </div>
     </div>
@@ -188,13 +185,6 @@ const handleCardClick = (index: number) => {
 
   .page-title {
     font-size: 1.75rem;
-  }
-
-  .pagination-btn {
-    min-width: 36px;
-    height: 36px;
-    padding: 0 8px;
-    font-size: 0.9rem;
   }
 }
 </style>

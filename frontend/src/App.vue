@@ -6,6 +6,16 @@ import { RouterLink, RouterView } from 'vue-router';
   <header>
     <div class="wrapper">
       <nav class="main-nav">
+        <v-text-field
+            density="compact"
+            placeholder="Search"
+            prepend-inner-icon="mdi-magnify"
+            width="200"
+            max-width="200px"
+            flat
+            hide-details
+            single-line
+        ></v-text-field>
         <RouterLink to="/" class="nav-link">Home</RouterLink>
         <RouterLink to="/about" class="nav-link">About</RouterLink>
       </nav>
