@@ -1,91 +1,40 @@
 <script setup lang="ts">
 import Card from "@/components/Card.vue";
-import { computed, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import PaginationComponent from "@/components/PaginationComponent.vue";
+import { type RequestInformation, sendBackEndRequest } from "@/api/Requests.ts";
+
+interface EventCard {
+  title: string;
+  subtitle: string;
+  text: string;
+}
 
 const isLoading = ref(false);
 const currentPage = ref(1);
-const itemsPerPage = 10;
+const totalPages = ref(1);
 
-const allCards = ref([
-  {
-    title: "Welcome to the Home Page",
-    subtitle: "This is a simple Vue 3 application",
-    text: "You can use this page to display information or navigate to other parts of the application."
-  },
-  {
-    title: "Getting Started",
-    subtitle: "Learn the basics",
-    text: "Explore our documentation to learn how to use this application effectively."
-  },
-  {
-    title: "Features",
-    subtitle: "What we offer",
-    text: "Discover all the amazing features available in this application."
-  },
-  {
-    title: "Recent Updates",
-    subtitle: "What's new",
-    text: "Stay up to date with our latest improvements and additions."
-  },
-  {
-    title: "Support",
-    subtitle: "Need help?",
-    text: "Contact our support team if you have any questions or issues."
-  },
-  {
-    title: "Tutorials",
-    subtitle: "Step-by-step guides",
-    text: "Learn how to make the most of our platform with these detailed tutorials."
-  },
-  {
-    title: "Resources",
-    subtitle: "Helpful tools",
-    text: "Access our collection of resources to enhance your productivity."
-  },
-  {
-    title: "Community",
-    subtitle: "Join our network",
-    text: "Connect with other users and share your experiences and tips."
-  }, {
-    title: "Community",
-    subtitle: "Join our network",
-    text: "Connect with other users and share your experiences and tips."
-  }, {
-    title: "Community",
-    subtitle: "Join our network",
-    text: "Connect with other users and share your experiences and tips."
-  }, {
-    title: "Community",
-    subtitle: "Join our network",
-    text: "Connect with other users and share your experiences and tips."
-  }, {
-    title: "Community",
-    subtitle: "Join our network",
-    text: "Connect with other users and share your experiences and tips."
-  }, {
-    title: "Community",
-    subtitle: "Join our network",
-    text: "Connect with other users and share your experiences and tips."
-  },
-  {
-    title: "Feedback",
-    subtitle: "Help us improve",
-    text: "Share your thoughts and suggestions to help us make our service better."
+const allCards = ref<EventCard[]>([]);
+
+const getCards = async () => {
+  const requestInfo: RequestInformation = {
+    method: 'GET',
+    path: `events?page=${currentPage.value}`,
+  };
+  const { success, data } = await sendBackEndRequest(requestInfo);
+
+  if (success) {
+    allCards.value = data.events;
+    totalPages.value = data.pagination.totalPages;
   }
-]);
+};
 
-const totalPages = computed(() => Math.ceil(allCards.value.length / itemsPerPage));
+onMounted(getCards);
 
-const cards = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage;
-  const end = start + itemsPerPage;
-  return allCards.value.slice(start, end);
-});
-
-const changePage = (page: number) => {
+const changePage = async (page: number) => {
   if (page > 0 && page <= totalPages.value) {
     currentPage.value = page;
+    await getCards();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 };
@@ -97,16 +46,16 @@ const handleCardClick = (index: number) => {
 
 <template>
   <div class="home-container">
-    <h1 class="page-title">Dashboard</h1>
+    <h1 class="page-title">All Events</h1>
 
     <PaginationComponent
-        :totalItems="allCards.length"
+        :total-pages="totalPages"
         :currentPage="currentPage"
         @update:current-page="changePage"
     />
     <div class="fade-container">
       <div class="cards-grid">
-        <div v-for="(card, index) in cards" :key="index" class="card-wrapper">
+        <div v-for="(card, index) in allCards" :key="index" class="card-wrapper">
           <Card
               :title="card.title"
               :subtitle="card.subtitle"
@@ -147,7 +96,7 @@ const handleCardClick = (index: number) => {
   max-height: 73vh;
   overflow-y: scroll;
   padding-right: 32px;
-  padding-left: 7rem;
+  padding-left: 3rem;
   padding-top: 3rem;
   padding-bottom: 3rem;
 }
@@ -159,24 +108,35 @@ const handleCardClick = (index: number) => {
 }
 
 .cards-grid::-webkit-scrollbar {
-  width: 5rem;
-}
-
-.cards-grid::-webkit-scrollbar-track {
-  background-color: transparent;
-}
-
-.cards-grid::-webkit-scrollbar-thumb {
-  background-image: url('@/assets/scroll-bar.png'); /* Update path based on your project structure */
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: fit;
+  width: 16px; /* Increased width for better visibility */
 }
 
 .card-wrapper {
   height: 100%;
   min-height: 200px;
 }
+
+.cards-grid::-webkit-scrollbar {
+  width: 16px;  /* Increased width for better visibility */
+}
+
+.cards-grid::-webkit-scrollbar-track {
+  background: var(--neutral-800, #1f2937);  /* Darker track */
+  border-radius: 10px;
+}
+
+.cards-grid::-webkit-scrollbar-thumb {
+  background-color: var(--primary-color);  /* Darker thumb color */
+  border-radius: 10px;
+  border: 3px solid var(--neutral-800, #1f2937);  /* Border creates padding effect */
+  min-height: 50px;  /* Ensure minimum thumb size */
+  transition: background-color 0.3s;
+}
+
+.cards-grid::-webkit-scrollbar-thumb:hover {
+  background-color: var(--primary-dark);  /* Even darker on hover */
+}
+
 
 @media (max-width: 768px) {
   .cards-grid {

@@ -62,13 +62,15 @@ export const getAllEvents = async (req: Request, res: Response) => {
 
     return res.status(200).json({
         success: true,
-        data: events,
-        pagination: {
-            page,
-            limit,
-            total,
-            totalPages,
-        }
+        data: {
+            events,
+            pagination: {
+                page,
+                limit,
+                total,
+                totalPages,
+            }
+        },
     });
 };
 

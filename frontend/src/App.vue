@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { fas } from "@fortawesome/free-solid-svg-icons";
 </script>
 
 <template>
@@ -16,8 +18,14 @@ import { RouterLink, RouterView } from 'vue-router';
             hide-details
             single-line
         ></v-text-field>
-        <RouterLink to="/" class="nav-link">Home</RouterLink>
-        <RouterLink to="/about" class="nav-link">About</RouterLink>
+        <RouterLink to="/" class="nav-link">
+          <FontAwesomeIcon :icon="fas.faHouse" class="mr-3"/>
+          Home
+        </RouterLink>
+        <RouterLink to="/about" class="nav-link">
+          <FontAwesomeIcon :icon="fas.faChartLine" class="mr-3"/>
+          Popular
+        </RouterLink>
       </nav>
     </div>
   </header>
