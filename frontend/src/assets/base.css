@@ -1,5 +1,7 @@
 /* Modern color palette */
 :root {
+    --dark-heeader-card: #0d182b;
+
     /* Primary colors */
     --primary-color: #3a86ff;
     --primary-dark: #2667cc;

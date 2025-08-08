@@ -5,9 +5,19 @@ import PaginationComponent from "@/components/PaginationComponent.vue";
 import { type RequestInformation, sendBackEndRequest } from "@/api/Requests.ts";
 
 interface EventCard {
+  id: number;
   title: string;
-  subtitle: string;
-  text: string;
+  description: string;
+  createdAt: string;
+  eventDate: string;
+  location: string;
+  views: number;
+  authorEmail: string;
+  categoryName: string;
+  maxCapacity: number | null;
+  likeCount: number;
+  dislikeCount: number;
+  tags: string[];
 }
 
 const isLoading = ref(false);
@@ -55,17 +65,24 @@ const handleCardClick = (index: number) => {
     />
     <div class="fade-container">
       <div class="cards-grid">
-        <div v-for="(card, index) in allCards" :key="index" class="card-wrapper">
+        <div v-for="(card, index) in allCards" :key="card.id" class="card-wrapper">
           <Card
+              :id="card.id"
               :title="card.title"
-              :subtitle="card.subtitle"
-              :text="card.text"
+              :description="card.description"
+              :location="card.location"
+              :eventDate="card.eventDate"
+              :tags="card.tags"
               :loading="isLoading"
-              @cardClick=handleCardClick(index)
+              :views="card.views"
+              :authorEmail="card.authorEmail"
+              :categoryName="card.categoryName"
+              :maxCapacity="card.maxCapacity"
+              :likeCount="card.likeCount"
+              :dislikeCount="card.dislikeCount"
+              :createdAt="card.createdAt"
+              @cardClick="handleCardClick(index)"
           >
-            <template v-slot:actions>
-              <v-btn variant="text" color="primary">Learn More</v-btn>
-            </template>
           </Card>
         </div>
       </div>
@@ -113,32 +130,35 @@ const handleCardClick = (index: number) => {
 
 .card-wrapper {
   height: 100%;
-  min-height: 200px;
+  min-height: 300px;
 }
 
 .cards-grid::-webkit-scrollbar {
-  width: 16px;  /* Increased width for better visibility */
+  width: 16px; /* Increased width for better visibility */
 }
 
 .cards-grid::-webkit-scrollbar-track {
-  background: var(--neutral-800, #1f2937);  /* Darker track */
+  background: var(--neutral-800, #1f2937); /* Darker track */
   border-radius: 10px;
 }
 
 .cards-grid::-webkit-scrollbar-thumb {
-  background-color: var(--primary-color);  /* Darker thumb color */
+  background-color: var(--primary-color); /* Darker thumb color */
   border-radius: 10px;
-  border: 3px solid var(--neutral-800, #1f2937);  /* Border creates padding effect */
-  min-height: 50px;  /* Ensure minimum thumb size */
+  border: 3px solid var(--neutral-800, #1f2937); /* Border creates padding effect */
+  min-height: 50px; /* Ensure minimum thumb size */
   transition: background-color 0.3s;
 }
 
 .cards-grid::-webkit-scrollbar-thumb:hover {
-  background-color: var(--primary-dark);  /* Even darker on hover */
+  background-color: var(--primary-dark); /* Even darker on hover */
 }
 
-
 @media (max-width: 768px) {
+  .card-wrapper {
+    min-height: 150px;
+  }
+
   .cards-grid {
     grid-template-columns: 1fr;
   }
