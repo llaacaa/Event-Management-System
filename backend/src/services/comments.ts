@@ -16,6 +16,14 @@ export const fetchAllEventComments = (eventId: string) => {
     return query(querystring, values);
 };
 
+export const createComment = (eventId: string, content: string, authorName: string) => {
+    const querystring = `INSERT INTO comments (event_id, comment_text, author_name)
+                         VALUES ($1, $2, $3) RETURNING *`;
+
+    const values = [eventId, content, authorName];
+    return query(querystring, values);
+};
+
 export const createCommentReaction = (commentId: string, visitorId: string, reactionType: string) => {
     const querystring = `INSERT INTO comment_reactions (comment_id, visitor_id, reaction_type)
                          VALUES ($1, $2, $3)`;

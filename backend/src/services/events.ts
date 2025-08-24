@@ -197,7 +197,7 @@ export const updateEventDislikes = (id: string, operator: "+" | "-") => {
 };
 
 export const getEventReactionsForVisitor = (eventId: string, visitorId: string, includeViews = false) => {
-    const additionalQuery = includeViews ? "" : "AND reaction_type IN ('LIKE', 'DISLIKE')";
+    const additionalQuery = includeViews ? "" : "AND reaction_type IN ('like', 'dislike')";
 
     const queryString = `SELECT reaction_type as "reactionType"
                          FROM event_reactions
@@ -213,7 +213,7 @@ export const removeEventReaction = (eventId: string, visitorId: string) => {
                          FROM event_reactions
                          WHERE event_id = $1
                            AND visitor_id = $2
-                           AND reaction_type IN ('LIKE', 'DISLIKE')`;
+                           AND reaction_type IN ('like', 'dislike')`;
 
     const values = [eventId, visitorId];
 

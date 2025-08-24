@@ -70,12 +70,12 @@ export interface TagJoinedType {
 }
 
 export enum EventReactionType {
-    LIKE = 'LIKE',
-    DISLIKE = 'DISLIKE',
-    VIEW = 'VIEW'
+    LIKE = 'like',
+    DISLIKE = 'dislike',
+    VIEW = 'view'
 }
 
 export enum CommentReactionType {
-    LIKE = 'LIKE',
-    DISLIKE = 'DISLIKE'
+    LIKE = 'like',
+    DISLIKE = 'dislike'
 }

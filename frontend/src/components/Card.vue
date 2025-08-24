@@ -19,7 +19,7 @@
             {{ tag }}
           </v-chip>
         </div>
-        <h3 class="card-title text-h3">{{ title }}</h3>
+        <h3 class="card-title text-h3">{{ titleToUse }}</h3>
         <div v-if="authorEmail" class="author-info">
           <v-icon size="small" icon="mdi-account"></v-icon>
           <span>{{ authorEmail }}</span>
@@ -136,6 +136,11 @@ const descriptionToUse = computed(() => {
   return desc.length > 20 ? desc.slice(0, 20) + '...' : desc;
 });
 
+const titleToUse = computed(() => {
+  const title = props.title;
+  return title.length > 15 ? title.slice(0, 15) + '...' : title;
+});
+
 const onClick = () => {
   emit('cardClick');
 };
@@ -228,6 +233,7 @@ const onClick = () => {
   gap: 8px;
   margin-top: 20px;
   right: 2rem;
-  top: 2rem;
+  top: 0;
+  flex-direction: column;
 }
 </style>

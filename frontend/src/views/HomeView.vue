@@ -3,22 +3,8 @@ import Card from "@/components/Card.vue";
 import { onMounted, ref } from 'vue';
 import PaginationComponent from "@/components/PaginationComponent.vue";
 import { type RequestInformation, sendBackEndRequest } from "@/api/Requests.ts";
-
-interface EventCard {
-  id: number;
-  title: string;
-  description: string;
-  createdAt: string;
-  eventDate: string;
-  location: string;
-  views: number;
-  authorEmail: string;
-  categoryName: string;
-  maxCapacity: number | null;
-  likeCount: number;
-  dislikeCount: number;
-  tags: string[];
-}
+import Router from "@/router";
+import type { EventCard } from "@/types/Events.ts";
 
 const isLoading = ref(false);
 const currentPage = ref(1);
@@ -49,9 +35,11 @@ const changePage = async (page: number) => {
   }
 };
 
-const handleCardClick = (index: number) => {
-  console.log(`Card ${index} clicked`);
+
+const handleCardClick = (id: number) => {
+  Router.push({ path: `events/${id}` });
 };
+
 </script>
 
 <template>
@@ -81,7 +69,7 @@ const handleCardClick = (index: number) => {
               :likeCount="card.likeCount"
               :dislikeCount="card.dislikeCount"
               :createdAt="card.createdAt"
-              @cardClick="handleCardClick(index)"
+              @cardClick="handleCardClick(card.id)"
           >
           </Card>
         </div>

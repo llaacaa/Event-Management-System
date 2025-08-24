@@ -12,8 +12,8 @@ import { fas } from "@fortawesome/free-solid-svg-icons";
             density="compact"
             placeholder="Search"
             prepend-inner-icon="mdi-magnify"
-            width="200"
-            max-width="200px"
+            width="300"
+            max-width="300px"
             flat
             hide-details
             single-line
