@@ -1,36 +1,28 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { RouterLink, RouterView } from "vue-router";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { fas } from "@fortawesome/free-solid-svg-icons";
+import SearchBar from "./components/SearchBar.vue";
 </script>
 
 <template>
   <header>
     <div class="wrapper">
       <nav class="main-nav">
-        <v-text-field
-            density="compact"
-            placeholder="Search"
-            prepend-inner-icon="mdi-magnify"
-            width="300"
-            max-width="300px"
-            flat
-            hide-details
-            single-line
-        ></v-text-field>
+        <SearchBar />
         <RouterLink to="/" class="nav-link">
-          <FontAwesomeIcon :icon="fas.faHouse" class="mr-3"/>
+          <FontAwesomeIcon :icon="fas.faHouse" class="mr-3" />
           Home
         </RouterLink>
         <RouterLink to="/about" class="nav-link">
-          <FontAwesomeIcon :icon="fas.faChartLine" class="mr-3"/>
+          <FontAwesomeIcon :icon="fas.faChartLine" class="mr-3" />
           Popular
         </RouterLink>
       </nav>
     </div>
   </header>
 
-  <RouterView/>
+  <RouterView />
 </template>
 
 <style scoped>

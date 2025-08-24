@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import Card from "@/components/Card.vue";
-import { onMounted, ref } from 'vue';
+import { onMounted, ref } from "vue";
 import PaginationComponent from "@/components/PaginationComponent.vue";
 import { type RequestInformation, sendBackEndRequest } from "@/api/Requests.ts";
-import Router from "@/router";
 import type { EventCard } from "@/types/Events.ts";
+import { handleCardClick } from "@/utils/ChangeRoute";
 
 const isLoading = ref(false);
 const currentPage = ref(1);
@@ -14,7 +14,7 @@ const allCards = ref<EventCard[]>([]);
 
 const getCards = async () => {
   const requestInfo: RequestInformation = {
-    method: 'GET',
+    method: "GET",
     path: `events?page=${currentPage.value}`,
   };
   const { success, data } = await sendBackEndRequest(requestInfo);
@@ -31,15 +31,9 @@ const changePage = async (page: number) => {
   if (page > 0 && page <= totalPages.value) {
     currentPage.value = page;
     await getCards();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 };
-
-
-const handleCardClick = (id: number) => {
-  Router.push({ path: `events/${id}` });
-};
-
 </script>
 
 <template>
@@ -47,29 +41,33 @@ const handleCardClick = (id: number) => {
     <h1 class="page-title">All Events</h1>
 
     <PaginationComponent
-        :total-pages="totalPages"
-        :currentPage="currentPage"
-        @update:current-page="changePage"
+      :total-pages="totalPages"
+      :currentPage="currentPage"
+      @update:current-page="changePage"
     />
     <div class="fade-container">
       <div class="cards-grid">
-        <div v-for="(card, index) in allCards" :key="card.id" class="card-wrapper">
+        <div
+          v-for="(card, index) in allCards"
+          :key="card.id"
+          class="card-wrapper"
+        >
           <Card
-              :id="card.id"
-              :title="card.title"
-              :description="card.description"
-              :location="card.location"
-              :eventDate="card.eventDate"
-              :tags="card.tags"
-              :loading="isLoading"
-              :views="card.views"
-              :authorEmail="card.authorEmail"
-              :categoryName="card.categoryName"
-              :maxCapacity="card.maxCapacity"
-              :likeCount="card.likeCount"
-              :dislikeCount="card.dislikeCount"
-              :createdAt="card.createdAt"
-              @cardClick="handleCardClick(card.id)"
+            :id="card.id"
+            :title="card.title"
+            :description="card.description"
+            :location="card.location"
+            :eventDate="card.eventDate"
+            :tags="card.tags"
+            :loading="isLoading"
+            :views="card.views"
+            :authorEmail="card.authorEmail"
+            :categoryName="card.categoryName"
+            :maxCapacity="card.maxCapacity"
+            :likeCount="card.likeCount"
+            :dislikeCount="card.dislikeCount"
+            :createdAt="card.createdAt"
+            @cardClick="handleCardClick(card.id)"
           >
           </Card>
         </div>
@@ -108,8 +106,20 @@ const handleCardClick = (id: number) => {
 
 .fade-container {
   position: relative;
-  mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
-  -webkit-mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black 20%,
+    black 80%,
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black 20%,
+    black 80%,
+    transparent
+  );
 }
 
 .cards-grid::-webkit-scrollbar {
