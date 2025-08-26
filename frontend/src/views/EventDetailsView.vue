@@ -16,6 +16,7 @@ const isLiked = ref(false);
 const likeCount = ref(0);
 const isDisliked = ref(false);
 const dislikeCount = ref(0);
+const viewCount = ref(0);
 
 const areCommentsEnabled = ref(false);
 
@@ -31,6 +32,7 @@ const loadEventData = async () => {
 
     if (isFetchingEventSuccessful && eventData) {
       eventStore.setSelectedEvent(eventData);
+      viewCount.value = eventData.views;
     }
 
     const reactionsOnEventRequestInfo: RequestInformation = {
@@ -43,7 +45,11 @@ const loadEventData = async () => {
       path: `events/increment-views/${eventId.value}`,
     };
 
-    sendBackEndRequest(viewCountRequestInfo);
+    const viewCountResponse = await sendBackEndRequest(viewCountRequestInfo);
+
+    if (viewCountResponse.success) {
+      viewCount.value += 1;
+    }
 
     const reactionsInfo = await sendBackEndRequest(reactionsOnEventRequestInfo);
 
@@ -71,6 +77,11 @@ const loadEventData = async () => {
 };
 
 loadEventData();
+
+onBeforeRouteUpdate((to, from, next) => {
+  loadEventData();
+  next();
+});
 
 const handleLike = async () => {
   if (isDisliked.value) {
@@ -132,14 +143,35 @@ const handleDislike = async () => {
       <p>Loading event details...</p>
     </div>
 
-    <div v-else-if="eventData" class="event-card">
+    <div v-else-if="eventData" class="event-card relative">
       <header class="event-header">
         <h1>{{ eventData.title }}</h1>
-        <span class="bg-indigo-950 px-3 py-1 rounded-lg text-lg">
-          <span class="font-italic">{{ eventData.categoryName }}</span>
-          <span class="px-2">|</span>
-          <span class="font-italic">{{ eventData.authorEmail }}</span>
-        </span>
+        <div class="event-meta">
+          <span class="meta-pill">
+            <v-icon icon="mdi-widgets" size="18" color="white" class="mr-1" />
+            <span>{{ eventData.categoryName }}</span>
+          </span>
+          <span class="meta-pill">
+            <v-icon icon="mdi-account" size="18" color="white" class="mr-1" />
+            <span>{{ eventData.authorEmail }}</span>
+          </span>
+        </div>
+        <div class="event-meta-secondary">
+          <span class="meta-pill secondary">
+            <v-icon icon="mdi-eye" size="18" color="#cbd5e1" class="mr-1" />
+            <span>{{ viewCount }}</span>
+          </span>
+          <span class="meta-pill secondary">
+            <v-icon
+              icon="mdi-calendar"
+              size="18"
+              color="#cbd5e1"
+              class="mr-1"
+            />
+            <b class="text-blue-200">Created:</b>
+            <span class="ml-1">{{ formatDate(eventData.createdAt) }}</span>
+          </span>
+        </div>
       </header>
 
       <div class="event-content">
@@ -169,9 +201,10 @@ const handleDislike = async () => {
           v-if="eventData.tags && eventData.tags.length"
           class="tags-section"
         >
-          <span v-for="tag in eventData.tags" :key="tag" class="tag">{{
-            tag
-          }}</span>
+          <span v-for="tag in eventData.tags" :key="tag" class="tag">
+            <v-icon icon="mdi-tag" size="18" color="black" class="mr-1" />
+            {{ tag }}</span
+          >
         </div>
       </div>
 
@@ -264,6 +297,50 @@ const handleDislike = async () => {
   color: white;
   margin-bottom: 0.25rem;
   font-size: 2rem;
+}
+
+.event-meta {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.event-meta-secondary {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  padding-top: 0.5rem;
+}
+
+.meta-pill {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border-radius: 999px;
+  padding: 0.25rem 0.9rem 0.25rem 0.6rem;
+  font-size: 1rem;
+  font-weight: 500;
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.04);
+  transition: background 0.2s;
+}
+
+.meta-pill:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.meta-pill.secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: #e0e7ef;
+  font-size: 0.95rem;
+  font-weight: 400;
+}
+
+.meta-pill.secondary b {
+  color: #93c5fd;
+  font-weight: 600;
 }
 
 .event-content {

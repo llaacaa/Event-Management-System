@@ -4,7 +4,7 @@ import EventCardsGrid from "@/components/EventCardsGrid.vue";
 
 <template>
   <EventCardsGrid
-    title="10 Newest Events"
-    apiPath="events/newest"
+    title="10 Popular Events"
+    apiPath="events/popular"
   />
 </template>

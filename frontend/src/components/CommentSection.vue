@@ -227,7 +227,7 @@ function handleNameSave(name: string) {
 }
 
 .comment-item {
-  padding: 1rem;
+  padding: 1rem 1rem 1.7rem 1rem;
   border-bottom: 1px solid var(--color-border);
 }
 

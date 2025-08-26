@@ -79,7 +79,9 @@ const toggleDislike = async () => {
 <template>
   <div class="comment-header">
     <span class="username">{{ props.comment.authorName }}</span>
-    <span class="date">{{ new Date(props.comment.createdAt).toLocaleString() }}</span>
+    <span class="date">{{
+      new Date(props.comment.createdAt).toLocaleString()
+    }}</span>
   </div>
   <div class="comment-content">
     {{ props.comment.commentText }}
@@ -87,21 +89,21 @@ const toggleDislike = async () => {
   <div class="absolute right-5 top-12">
     <div class="flex">
       <div class="mx-1">
-        <button @click="toggleLike">
-          <v-icon
-            icon="mdi-thumb-up"
-            :color="isLiked ? 'blue' : 'gray'"
-          ></v-icon>
-        </button>
+        <v-btn
+          @click="toggleLike"
+          :color="isLiked ? 'blue-lighten-2' : 'gray'"
+          icon="mdi-thumb-up"
+          variant="text"
+        ></v-btn>
         <span class="pl-2">{{ likeCount }}</span>
       </div>
       <div class="mx-1">
-        <button @click="toggleDislike">
-          <v-icon
-            icon="mdi-thumb-down"
-            :color="isDisliked ? 'red' : 'gray'"
-          ></v-icon>
-        </button>
+        <v-btn
+          @click="toggleDislike"
+          :color="isDisliked ? 'red-lighten-2' : 'gray'"
+          icon="mdi-thumb-down"
+          variant="text"
+        ></v-btn>
         <span class="pl-2">{{ dislikeCount }}</span>
       </div>
     </div>

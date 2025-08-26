@@ -6,10 +6,13 @@ import {
   fetchEvents,
   fetchMostPopularEvents,
   fetchNewestEvents,
+  getEventBasedOnCategory,
   getEventById,
   getEventReactionsForVisitor,
+  getEventsByCategory,
   incrementEventViews,
   modifyEvent,
+  mostInteractedEvents,
   removeEvent,
   removeEventReaction,
   updateEventDislikes,
@@ -81,6 +84,60 @@ export const getAllEvents = async (req: Request, res: Response) => {
     const tagsForEvent = tags.filter((tag) => tag.eventId === event.id);
     event.tags = tagsForEvent.map((tag) => tag.name);
   });
+
+  const totalPages = Math.ceil(total / limit);
+
+  return res.status(200).json({
+    success: true,
+    data: {
+      events,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+      },
+    },
+  });
+};
+
+export const getEventsByCategoryController = async (
+  req: Request,
+  res: Response
+) => {
+  const category = req.params.category;
+
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+  const offset = (page - 1) * limit;
+
+  if (!category) {
+    return res.status(400).json({
+      success: false,
+      error: { message: "Category is required" },
+    });
+  }
+
+  const { eventsFromDB, totalFromDB } = await getEventsByCategory(
+    category,
+    offset,
+    limit
+  );
+
+  if (!eventsFromDB.success) {
+    return res
+      .status(eventsFromDB.status || 500)
+      .json({ success: false, error: eventsFromDB.error });
+  }
+
+  if (!totalFromDB.success) {
+    return res
+      .status(totalFromDB.status || 500)
+      .json({ success: false, error: totalFromDB.error });
+  }
+
+  const total = Number(totalFromDB.data[0].count);
+  const events: EventType[] = eventsFromDB.data;
 
   const totalPages = Math.ceil(total / limit);
 
@@ -434,7 +491,34 @@ export const getTheNewestEvents = async (req: Request, res: Response) => {
 
   return res.status(200).json({
     success: true,
-    data: events,
+    data: { events },
+  });
+};
+
+export const getMostInteractedEvents = async (req: Request, res: Response) => {
+  const eventsFromDB = await mostInteractedEvents();
+  if (!eventsFromDB.success) {
+    return res
+      .status(eventsFromDB.status || 500)
+      .json({ success: false, error: eventsFromDB.error });
+  }
+  const events: EventType[] = eventsFromDB.data;
+  const tagsFromDB = await fetchAllEventTags();
+  if (!tagsFromDB.success) {
+    res
+      .status(tagsFromDB.status || 500)
+      .json({ success: false, error: tagsFromDB.error });
+    return;
+  }
+  const tags: TagJoinedType[] = tagsFromDB.data;
+  events.map((event) => {
+    const tagsForEvent = tags.filter((tag) => tag.eventId === event.id);
+    event.tags = tagsForEvent.map((tag) => tag.name);
+  });
+
+  return res.status(200).json({
+    success: true,
+    data: { events },
   });
 };
 
@@ -461,7 +545,7 @@ export const getTheMostPopularEvents = async (req: Request, res: Response) => {
 
   return res.status(200).json({
     success: true,
-    data: events,
+    data: { events },
   });
 };
 

@@ -1,7 +1,7 @@
 import { query } from "../utils/db";
 
 export const getCategoriesWithPagination = async (offset: number = 0, limit?: number) => {
-    let queryText = "SELECT * FROM categories";
+    let queryText = `SELECT name, description, created_at as "createdAt" FROM categories`;
     if (limit) {
         queryText += ` LIMIT ${limit} OFFSET ${offset}`;
     }
@@ -34,7 +34,7 @@ export const removeCategory = (name: string) => {
 };
 
 export const getCategoryByName = (name: string) => {
-    const queryText = "SELECT * FROM categories WHERE name = $1";
+    const queryText = `SELECT name, description, created_at as "createdAt" FROM categories WHERE name = $1`;
     const values = [name];
 
     return query(queryText, values);

@@ -3,6 +3,7 @@ import { RouterLink, RouterView } from "vue-router";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { fas } from "@fortawesome/free-solid-svg-icons";
 import SearchBar from "./components/SearchBar.vue";
+import MostInteractedComponent from "./components/MostInteractedComponent.vue";
 </script>
 
 <template>
@@ -14,13 +15,21 @@ import SearchBar from "./components/SearchBar.vue";
           <FontAwesomeIcon :icon="fas.faHouse" class="mr-3" />
           Home
         </RouterLink>
-        <RouterLink to="/about" class="nav-link">
+        <RouterLink to="/categories" class="nav-link">
+          <v-icon icon="mdi-widgets" size="20" class="mr-1" />
+          Categories
+        </RouterLink>
+        <RouterLink to="/popular" class="nav-link">
           <FontAwesomeIcon :icon="fas.faChartLine" class="mr-3" />
           Popular
         </RouterLink>
       </nav>
     </div>
   </header>
+
+  <main>
+    <MostInteractedComponent />
+  </main>
 
   <RouterView />
 </template>

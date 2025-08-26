@@ -2,6 +2,7 @@
 import { sendBackEndRequest, type RequestInformation } from "@/api/Requests";
 import type { EventCard } from "@/types/Events";
 import { handleCardClick } from "@/utils/ChangeRoute";
+import { formatDate } from "@/utils/DateFromatter";
 import { ref, watch, nextTick } from "vue";
 
 const searchInput = ref("");
@@ -37,6 +38,7 @@ async function fetchEvents(
 
   const response = await sendBackEndRequest(requestInfo);
   const events = response.data.events as EventCard[];
+  const pagination = response.data.pagination;
 
   if (append) {
     searchedEvents.value = [...searchedEvents.value, ...events];
@@ -44,8 +46,7 @@ async function fetchEvents(
     searchedEvents.value = events;
   }
 
-  hasMorePages.value =
-    events.length > 0 && (response.data.hasMore ?? events.length === 10);
+  hasMorePages.value = pagination.page < pagination.totalPages;
 
   return events;
 }
@@ -78,9 +79,8 @@ async function loadMoreEvents() {
 
   try {
     const events = await fetchEvents(searchInput.value.trim(), nextPage, true);
-    if (events.length > 0) {
-      currentPage.value = nextPage;
-    }
+    // Update current page after successful fetch
+    currentPage.value = nextPage;
   } catch (error) {
     console.error("Load more error:", error);
   } finally {
@@ -162,7 +162,7 @@ watch(searchInput, (val) => {
           </div>
           <div class="event-content">
             <div class="event-title">{{ event.title }}</div>
-            <div class="event-date">{{ event.eventDate }}</div>
+            <div class="event-date">{{ formatDate(event.eventDate) }}</div>
           </div>
           <div class="event-arrow">
             <v-icon size="16" color="#999">mdi-chevron-right</v-icon>
