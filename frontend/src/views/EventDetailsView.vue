@@ -1,6 +1,3 @@
-
-// Replace your existing script setup with this corrected version:
-
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
 import { useEventStore } from "@/stores/EventDetailState.ts";
