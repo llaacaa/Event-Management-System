@@ -26,7 +26,7 @@ export const linkTagToEvent = (tagId: string, eventId: string) => {
 };
 
 export const fetchAllEventTags = () => {
-    const queryString = `SELECT tags.name, event_id as "eventId"
+    const queryString = `SELECT tags.id, tags.name, event_id as "eventId"
                          FROM tags
                                   INNER JOIN event_tags ON tags.id = event_tags.tag_id`;
 

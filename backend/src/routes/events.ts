@@ -6,7 +6,9 @@ import {
   getAllEvents,
   getEventByIdController,
   getEventsByCategoryController,
+  getEventsByTag,
   getMostInteractedEvents,
+  getRelatedEvents,
   getTheMostPopularEvents,
   getTheNewestEvents, getUsersReactionsToEvent,
   incrementViews, likeEvent, removeReaction,
@@ -21,8 +23,10 @@ eventsRouter.get("/", asyncHandler(getAllEvents));
 eventsRouter.get("/:id/reactions", asyncHandler(getUsersReactionsToEvent));
 eventsRouter.get("/newest", asyncHandler(getTheNewestEvents));
 eventsRouter.get("/popular", asyncHandler(getTheMostPopularEvents));
+eventsRouter.get("/events-by-tag/:tagId", asyncHandler(getEventsByTag));
 eventsRouter.get("/most-interacted", asyncHandler(getMostInteractedEvents));
 eventsRouter.get("/by-category/:category", asyncHandler(getEventsByCategoryController));
+eventsRouter.get("/related-events/:id", asyncHandler(getRelatedEvents));
 eventsRouter.get("/:id", asyncHandler(getEventByIdController));
 eventsRouter.post("/", checkBody, checkForToken, asyncHandler(addEvent));
 eventsRouter.patch("/:id", checkBody, checkForToken, asyncHandler(updateEvent));

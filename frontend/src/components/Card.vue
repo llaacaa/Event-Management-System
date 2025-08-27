@@ -1,22 +1,22 @@
 <template>
   <v-card
-      :loading="loading"
-      :rounded="`lg`"
-      class="card-custom px-6 py-8"
-      elevation="3"
-      @click="onClick"
+    :loading="loading"
+    :rounded="`lg`"
+    class="card-custom px-6 py-8"
+    elevation="3"
+    @click="onClick"
   >
     <v-card-item>
       <div class="card-header">
         <div v-if="tags && tags.length" class="tags-container">
           <v-chip
-              v-for="tag in tags"
-              :key="tag"
-              size="default"
-              color="primary"
-              variant="outlined"
+            v-for="tag in tags"
+            :key="tag.id"
+            size="default"
+            color="primary"
+            variant="outlined"
           >
-            {{ tag }}
+            {{ tag.name }}
           </v-chip>
         </div>
         <h3 class="card-title text-h3">{{ titleToUse }}</h3>
@@ -47,15 +47,21 @@
       <div class="card-stats">
         <div class="stat-item">
           <v-icon icon="mdi-eye" color="gray"></v-icon>
-          <span class="bg-gray-100 rounded-xl px-2 text-black">{{ views }}</span>
+          <span class="bg-gray-100 rounded-xl px-2 text-black">{{
+            views
+          }}</span>
         </div>
         <div class="stat-item">
-          <v-icon  icon="mdi-thumb-up" color="blue"></v-icon>
-          <span class="bg-blue-100 rounded-xl px-2 text-black">{{ likeCount }}</span>
+          <v-icon icon="mdi-thumb-up" color="blue"></v-icon>
+          <span class="bg-blue-100 rounded-xl px-2 text-black">{{
+            likeCount
+          }}</span>
         </div>
         <div class="stat-item">
-          <v-icon  icon="mdi-thumb-down" color="red"></v-icon>
-          <span class="bg-red-100 rounded-xl px-2 text-black">{{ dislikeCount }}</span>
+          <v-icon icon="mdi-thumb-down" color="red"></v-icon>
+          <span class="bg-red-100 rounded-xl px-2 text-black">{{
+            dislikeCount
+          }}</span>
         </div>
         <div v-if="maxCapacity" class="stat-item">
           <v-icon size="large" icon="mdi-account-group"></v-icon>
@@ -67,82 +73,83 @@
 </template>
 
 <script setup lang="ts">
+import type { Tag } from "@/types/Events";
 import { formatDate } from "@/utils/DateFromatter.ts";
 import { computed, toRef } from "vue";
 
 const props = defineProps({
   loading: {
     type: Boolean,
-    default: false
+    default: false,
   },
   id: {
     type: Number,
-    default: 0
+    default: 0,
   },
   title: {
     type: String,
-    required: true
+    required: true,
   },
   description: {
     type: String,
-    default: ''
+    default: "",
   },
   createdAt: {
     type: String,
-    default: ''
+    default: "",
   },
   eventDate: {
     type: String,
-    default: ''
+    default: "",
   },
   location: {
     type: String,
-    default: ''
+    default: "",
   },
   views: {
     type: Number,
-    default: 0
+    default: 0,
   },
   authorEmail: {
     type: String,
-    default: ''
+    default: "",
   },
   categoryName: {
     type: String,
-    default: ''
+    default: "",
   },
   maxCapacity: {
     type: Number,
-    default: null
+    default: null,
   },
   likeCount: {
     type: Number,
-    default: 0
+    default: 0,
   },
   dislikeCount: {
     type: Number,
-    default: 0
+    default: 0,
   },
   tags: {
-    type: Array as () => string[],
-    default: () => []
-  }
+    type: Array as () => Tag[],
+    default: () => [],
+  },
 });
 
-const emit = defineEmits(['cardClick']);
+const emit = defineEmits(["cardClick"]);
 
 const descriptionToUse = computed(() => {
   const desc = props.description;
-  return desc.length > 20 ? desc.slice(0, 20) + '...' : desc;
+  return desc.length > 20 ? desc.slice(0, 20) + "..." : desc;
 });
 
 const titleToUse = computed(() => {
   const title = props.title;
-  return title.length > 15 ? title.slice(0, 15) + '...' : title;
+  return title.length > 15 ? title.slice(0, 15) + "..." : title;
 });
 
 const onClick = () => {
-  emit('cardClick');
+  emit("cardClick");
 };
 </script>
 

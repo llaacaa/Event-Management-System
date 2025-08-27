@@ -280,3 +280,24 @@ export const removeEventReaction = (eventId: string, visitorId: string) => {
 
   return query(queryString, values);
 };
+
+export const getEventsBasedOnTag = (id: string) => {
+  const queryString = `SELECT ${selectAllSQL}
+                         FROM events
+                         WHERE id IN (
+                           SELECT event_id
+                           FROM event_tags
+                           WHERE tag_id = $1
+                         )`;
+  const values = [id];
+
+  return query(queryString, values);
+};
+
+export const fetchRelatedEvents = async (id: string) => {
+  const queryString = `SELECT ${selectAllSQL} from events where id in (SELECT event_id from event_tags et left join tags t on et.tag_id = t.id where t.id IN (SELECT tag_id from event_tags where event_id = $1) AND event_id != $1)`;
+
+  const values = [id];
+
+  return query(queryString, values);
+};

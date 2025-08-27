@@ -1,4 +1,6 @@
-=
+
+// Replace your existing script setup with this corrected version:
+
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
 import { useEventStore } from "@/stores/EventDetailState.ts";
@@ -6,11 +8,14 @@ import { onBeforeRouteUpdate, useRoute } from "vue-router";
 import { type RequestInformation, sendBackEndRequest } from "@/api/Requests.ts";
 import CommentSection from "@/components/CommentSection.vue";
 import { formatDate, formatTime } from "@/utils/DateFromatter.ts";
+import { handleTagClick } from "@/utils/TagClick";
+import type { EventCard } from "@/types/Events";
+import { handleCardClick } from "@/utils/ChangeRoute";
 
 const eventStore = useEventStore();
 const route = useRoute();
 const eventId = computed(() => Number(route.params.id));
-const eventData = computed(() => eventStore.selectedEvent);
+const eventData = ref<EventCard | null>(null);
 const isLoading = ref(false);
 const isLiked = ref(false);
 const likeCount = ref(0);
@@ -18,21 +23,36 @@ const isDisliked = ref(false);
 const dislikeCount = ref(0);
 const viewCount = ref(0);
 
+const relatedEvents = ref<EventCard[]>([]);
 const areCommentsEnabled = ref(false);
 
 const loadEventData = async () => {
   isLoading.value = true;
+  eventData.value = null;
+  isLiked.value = false;
+  isDisliked.value = false;
+  likeCount.value = 0;
+  dislikeCount.value = 0;
+  viewCount.value = 0;
+  relatedEvents.value = [];
+  areCommentsEnabled.value = false;
+
   try {
     const requestInfo: RequestInformation = {
       method: "GET",
       path: `events/${eventId.value}`,
     };
-    const { success: isFetchingEventSuccessful, data: eventData } =
+    const { success: isFetchingEventSuccessful, data: eventDataInfo } =
       await sendBackEndRequest(requestInfo);
 
-    if (isFetchingEventSuccessful && eventData) {
-      eventStore.setSelectedEvent(eventData);
-      viewCount.value = eventData.views;
+    if (isFetchingEventSuccessful && eventDataInfo) {
+      eventStore.setSelectedEvent(eventDataInfo);
+      eventData.value = eventDataInfo;
+      viewCount.value = eventDataInfo.views;
+      likeCount.value = eventDataInfo.likeCount || 0;
+      dislikeCount.value = eventDataInfo.dislikeCount || 0;
+      
+      await loadRelatedEvents();
     }
 
     const reactionsOnEventRequestInfo: RequestInformation = {
@@ -53,8 +73,8 @@ const loadEventData = async () => {
 
     const reactionsInfo = await sendBackEndRequest(reactionsOnEventRequestInfo);
 
-    if (reactionsInfo.success) {
-      switch (reactionsInfo?.data[0]?.reactionType) {
+    if (reactionsInfo.success && reactionsInfo.data?.[0]) {
+      switch (reactionsInfo.data[0].reactionType) {
         case "like":
           isLiked.value = true;
           break;
@@ -69,24 +89,52 @@ const loadEventData = async () => {
     }
   } catch (error) {
     console.error("Error fetching event details:", error);
+    eventData.value = null;
   } finally {
     isLoading.value = false;
-    likeCount.value = eventData.value?.likeCount || 0;
-    dislikeCount.value = eventData.value?.dislikeCount || 0;
   }
 };
 
-loadEventData();
+const loadRelatedEvents = async () => {
+  try {
+    const requestInfo: RequestInformation = {
+      method: "GET",
+      path: `events/related-events/${eventId.value}`,
+    };
+    const { success, data } = await sendBackEndRequest(requestInfo);
+    if (success) {
+      relatedEvents.value = data || [];
+    }
+  } catch (error) {
+    console.error("Error fetching related events:", error);
+    relatedEvents.value = [];
+  }
+};
 
-onBeforeRouteUpdate((to, from, next) => {
-  loadEventData();
-  next();
+watch(
+  eventId,
+  (newEventId, oldEventId) => {
+    if (newEventId !== oldEventId && newEventId) {
+      loadEventData();
+    }
+  },
+  { immediate: true } 
+);
+
+onBeforeRouteUpdate(async (to, from, next) => {
+  const newEventId = Number(to.params.id);
+  
+  if (newEventId !== Number(from.params.id)) {
+    next(); 
+  } else {
+    next();
+  }
 });
 
 const handleLike = async () => {
   if (isDisliked.value) {
     isDisliked.value = false;
-    dislikeCount.value = dislikeCount.value - 1;
+    dislikeCount.value = Math.max(0, dislikeCount.value - 1);
   }
 
   const requestInfo: RequestInformation = isLiked.value
@@ -99,20 +147,25 @@ const handleLike = async () => {
         path: `events/like/${eventId.value}`,
       };
 
-  const response = await sendBackEndRequest(requestInfo);
-  if (response.success) {
-    likeCount.value = !isLiked.value
-      ? likeCount.value + 1
-      : likeCount.value - 1;
+  try {
+    const response = await sendBackEndRequest(requestInfo);
+    if (response.success) {
+      if (isLiked.value) {
+        likeCount.value = Math.max(0, likeCount.value - 1);
+      } else {
+        likeCount.value += 1;
+      }
+      isLiked.value = !isLiked.value;
+    }
+  } catch (error) {
+    console.error("Error handling like:", error);
   }
-
-  isLiked.value = !isLiked.value;
 };
 
 const handleDislike = async () => {
   if (isLiked.value) {
     isLiked.value = false;
-    likeCount.value = likeCount.value - 1;
+    likeCount.value = Math.max(0, likeCount.value - 1);
   }
 
   const requestInfo: RequestInformation = isDisliked.value
@@ -125,14 +178,19 @@ const handleDislike = async () => {
         path: `events/dislike/${eventId.value}`,
       };
 
-  const response = await sendBackEndRequest(requestInfo);
-  if (response.success) {
-    dislikeCount.value = !isDisliked.value
-      ? dislikeCount.value + 1
-      : dislikeCount.value - 1;
+  try {
+    const response = await sendBackEndRequest(requestInfo);
+    if (response.success) {
+      if (isDisliked.value) {
+        dislikeCount.value = Math.max(0, dislikeCount.value - 1);
+      } else {
+        dislikeCount.value += 1;
+      }
+      isDisliked.value = !isDisliked.value;
+    }
+  } catch (error) {
+    console.error("Error handling dislike:", error);
   }
-
-  isDisliked.value = !isDisliked.value;
 };
 </script>
 
@@ -201,9 +259,14 @@ const handleDislike = async () => {
           v-if="eventData.tags && eventData.tags.length"
           class="tags-section"
         >
-          <span v-for="tag in eventData.tags" :key="tag" class="tag">
+          <span
+            v-for="tag in eventData.tags"
+            :key="tag.id"
+            class="tag cursor-pointer"
+            @click="handleTagClick(tag)"
+          >
             <v-icon icon="mdi-tag" size="18" color="black" class="mr-1" />
-            {{ tag }}</span
+            {{ tag.name }}</span
           >
         </div>
       </div>
@@ -243,6 +306,25 @@ const handleDislike = async () => {
     <div v-else class="not-found">
       <h2>Event not found</h2>
       <p>We couldn't find the event you're looking for.</p>
+    </div>
+  </div>
+  <div v-if="relatedEvents.length" class="related-events ml-5">
+    <h2>Read more...</h2>
+    <div class="related-events-list">
+      <div
+        v-for="event in relatedEvents"
+        :key="event.id"
+        class="related-event-card"
+        @click="handleCardClick(event.id)"
+      >
+        <h3 class="related-event-title">{{ event.title }}</h3>
+        <p class="related-event-description">
+          {{ event.description?.slice(0, 40)
+          }}<span v-if="event.description && event.description.length > 40"
+            >...</span
+          >
+        </p>
+      </div>
     </div>
   </div>
 </template>
@@ -465,13 +547,75 @@ const handleDislike = async () => {
   box-shadow: var(--card-shadow);
 }
 
-@media (max-width: 600px) {
-  .info-section {
-    grid-template-columns: 1fr;
-  }
+.related-events {
+  margin-top: 2rem;
+}
 
-  .actions-section {
+.related-events-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.related-event-card {
+  background: var(--color-background-soft);
+  border: 1px solid var(--color-border);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  padding: 1.25rem 1.5rem;
+  min-width: 260px;
+  max-width: 320px;
+  flex: 1 1 260px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: box-shadow 0.2s, border 0.2s;
+}
+
+.related-event-card:hover {
+  border: 1.5px solid var(--color-accent);
+  box-shadow: 0 6px 18px 0 rgba(58, 134, 255, 0.12);
+}
+
+.related-event-title {
+  color: var(--color-heading);
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.related-event-description {
+  color: var(--color-text);
+  font-size: 0.97rem;
+  margin-bottom: 1rem;
+  min-height: 2.5em;
+}
+
+.related-event-link {
+  align-self: flex-start;
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.5rem;
+  background: var(--secondary-light);
+  transition: background 0.2s;
+}
+
+.related-event-link:hover {
+  background: var(--primary-light);
+  color: white;
+}
+
+/* Responsive for mobile */
+@media (max-width: 700px) {
+  .related-events-list {
     flex-direction: column;
+    gap: 1rem;
+  }
+  .related-event-card {
+    max-width: 100%;
+    min-width: 0;
   }
 }
 </style>

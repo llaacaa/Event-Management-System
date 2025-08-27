@@ -28,6 +28,11 @@ const router = createRouter({
       component: PopularView,
     },
     {
+      path: "/events-by-tag",
+      name: "eventsByTag",
+      component: () => import("../views/EventsByTagView.vue"),
+    },
+    {
       path: "/events/:id",
       name: "details",
       component: () => import("../views/EventDetailsView.vue"),

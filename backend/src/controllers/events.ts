@@ -6,9 +6,11 @@ import {
   fetchEvents,
   fetchMostPopularEvents,
   fetchNewestEvents,
+  fetchRelatedEvents,
   getEventBasedOnCategory,
   getEventById,
   getEventReactionsForVisitor,
+  getEventsBasedOnTag,
   getEventsByCategory,
   incrementEventViews,
   modifyEvent,
@@ -82,7 +84,7 @@ export const getAllEvents = async (req: Request, res: Response) => {
 
   events.map((event) => {
     const tagsForEvent = tags.filter((tag) => tag.eventId === event.id);
-    event.tags = tagsForEvent.map((tag) => tag.name);
+    event.tags = tagsForEvent.map((tag) => ({ id: tag.id, name: tag.name }));
   });
 
   const totalPages = Math.ceil(total / limit);
@@ -190,7 +192,7 @@ export const getEventByIdController = async (req: Request, res: Response) => {
   const tags: TagJoinedType[] = tagsFromDB.data;
 
   const tagsForEvent = tags.filter((tag) => tag.eventId === event.id);
-  event.tags = tagsForEvent.map((tag) => tag.name);
+  event.tags = tagsForEvent.map((tag) => ({ id: tag.id, name: tag.name }));
 
   return res.status(200).json({
     success: true,
@@ -292,6 +294,45 @@ export const addEvent = async (req: AuthenticatedRequest, res: Response) => {
     success: true,
     data: { event, tags },
     message: "Event created successfully",
+  });
+};
+
+export const getRelatedEvents = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  const { id } = req.params;
+
+  const existingEventResult = await getEventById(id);
+
+  if (!existingEventResult.success) {
+    return res
+      .status(existingEventResult.status || 500)
+      .json({ success: false, error: existingEventResult.error });
+  }
+
+  const existingEvent = existingEventResult.data[0];
+
+  if (!existingEvent) {
+    return res.status(404).json({
+      success: false,
+      error: { message: "Event not found" },
+    });
+  }
+
+  const relatedEventsFromDB = await fetchRelatedEvents(id);
+
+  if (!relatedEventsFromDB.success) {
+    return res
+      .status(relatedEventsFromDB.status || 500)
+      .json({ success: false, error: relatedEventsFromDB.error });
+  }
+
+  const relatedEvents = relatedEventsFromDB.data;
+
+  return res.status(200).json({
+    success: true,
+    data: relatedEvents,
   });
 };
 
@@ -486,7 +527,42 @@ export const getTheNewestEvents = async (req: Request, res: Response) => {
 
   events.map((event) => {
     const tagsForEvent = tags.filter((tag) => tag.eventId === event.id);
-    event.tags = tagsForEvent.map((tag) => tag.name);
+    event.tags = tagsForEvent.map((tag) => ({ id: tag.id, name: tag.name }));
+  });
+
+  return res.status(200).json({
+    success: true,
+    data: { events },
+  });
+};
+
+export const getEventsByTag = async (req: Request, res: Response) => {
+  const { tagId } = req.params;
+
+  const eventsFromDB = await getEventsBasedOnTag(tagId);
+
+  if (!eventsFromDB.success) {
+    return res
+      .status(eventsFromDB.status || 500)
+      .json({ success: false, error: eventsFromDB.error });
+  }
+
+  const events: EventType[] = eventsFromDB.data;
+
+  const tagsFromDB = await fetchAllEventTags();
+
+  if (!tagsFromDB.success) {
+    res
+      .status(tagsFromDB.status || 500)
+      .json({ success: false, error: tagsFromDB.error });
+    return;
+  }
+
+  const tags: TagJoinedType[] = tagsFromDB.data;
+
+  events.map((event) => {
+    const tagsForEvent = tags.filter((tag) => tag.eventId === event.id);
+    event.tags = tagsForEvent.map((tag) => ({ id: tag.id, name: tag.name }));
   });
 
   return res.status(200).json({
@@ -513,7 +589,7 @@ export const getMostInteractedEvents = async (req: Request, res: Response) => {
   const tags: TagJoinedType[] = tagsFromDB.data;
   events.map((event) => {
     const tagsForEvent = tags.filter((tag) => tag.eventId === event.id);
-    event.tags = tagsForEvent.map((tag) => tag.name);
+    event.tags = tagsForEvent.map((tag) => ({ id: tag.id, name: tag.name }));
   });
 
   return res.status(200).json({
@@ -540,7 +616,7 @@ export const getTheMostPopularEvents = async (req: Request, res: Response) => {
   const tags: TagJoinedType[] = tagsFromDB.data;
   events.map((event) => {
     const tagsForEvent = tags.filter((tag) => tag.eventId === event.id);
-    event.tags = tagsForEvent.map((tag) => tag.name);
+    event.tags = tagsForEvent.map((tag) => ({ id: tag.id, name: tag.name }));
   });
 
   return res.status(200).json({
