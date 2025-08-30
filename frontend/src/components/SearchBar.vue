@@ -117,7 +117,6 @@ watch(searchInput, (val) => {
       density="compact"
       placeholder="Search events..."
       prepend-inner-icon="mdi-magnify"
-      width="300"
       flat
       hide-details
       single-line
@@ -206,6 +205,18 @@ watch(searchInput, (val) => {
   border-radius: 12px !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   transition: box-shadow 0.3s ease;
+  width: 300px;
+}
+
+@media (max-width: 960px) {
+  .search-wrapper {
+    width: 100%;
+  }
+
+  .search-input {
+    width: 100%;
+  }
+  
 }
 
 .search-input:focus-within {
@@ -437,5 +448,6 @@ watch(searchInput, (val) => {
   .event-date {
     color: #bbb;
   }
+
 }
 </style>

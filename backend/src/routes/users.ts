@@ -11,8 +11,8 @@ const usersRouter = express.Router();
 usersRouter.post("/login", checkBody, asyncHandler(loginUser));
 
 usersRouter.get("/", checkForAdminToken, asyncHandler(getAllUsers));
-usersRouter.post("/", checkBody, checkForAdminToken, asyncHandler(registerUser));
-usersRouter.put("/", checkBody, checkForAdminToken, asyncHandler(updateUser));
-usersRouter.patch("/", checkBody, checkForAdminToken, asyncHandler(updateUserStatus));
+usersRouter.post("/register-user", checkBody, checkForAdminToken, asyncHandler(registerUser));
+usersRouter.put("/update-user", checkBody, checkForAdminToken, asyncHandler(updateUser));
+usersRouter.patch("/update-user-status", checkBody, checkForAdminToken, asyncHandler(updateUserStatus));
 
 export default usersRouter;

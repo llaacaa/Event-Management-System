@@ -4,11 +4,15 @@ import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { fas } from "@fortawesome/free-solid-svg-icons";
 import SearchBar from "./components/SearchBar.vue";
 import MostInteractedComponent from "./components/MostInteractedComponent.vue";
+import { useUserState } from "./stores/UserState";
+
+const userState = useUserState();
 </script>
 
 <template>
   <header>
     <div class="wrapper">
+
       <nav class="main-nav">
         <SearchBar />
         <RouterLink to="/" class="nav-link">
@@ -22,6 +26,10 @@ import MostInteractedComponent from "./components/MostInteractedComponent.vue";
         <RouterLink to="/popular" class="nav-link">
           <FontAwesomeIcon :icon="fas.faChartLine" class="mr-3" />
           Popular
+        </RouterLink>
+        <RouterLink :to="userState.isLoggedIn ? '/' : '/login'" class="nav-link" @click="userState.isLoggedIn ? userState.logout() : null">
+          <FontAwesomeIcon :icon="fas.faUser" />
+          {{ userState.isLoggedIn ? "Logout" : "Login" }}
         </RouterLink>
       </nav>
     </div>
@@ -78,7 +86,7 @@ header {
   background-color: var(--primary-dark);
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 961px) {
   header {
     display: flex;
     align-items: center;
@@ -99,5 +107,13 @@ header {
     padding: 0;
     margin: 0;
   }
+}
+
+@media (max-width: 960px) {
+  .main-nav {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
 }
 </style>
