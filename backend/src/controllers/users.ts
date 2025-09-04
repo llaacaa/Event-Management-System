@@ -268,6 +268,15 @@ export const updateUserStatus = async (req: Request, res: Response) => {
     });
   }
 
+  if (existingUser[0].userType === UserType.ADMIN) {
+    return res.status(403).json({
+      success: false,
+      error: {
+        message: "Admin users cannot change their own status.",
+      },
+    });
+  }
+
   await updateUserActivityStatus(email, status);
 
   return res.status(200).json({

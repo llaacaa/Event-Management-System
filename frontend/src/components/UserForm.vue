@@ -2,76 +2,122 @@
 import { onMounted, reactive, ref } from "vue";
 import { sendBackEndRequest, type RequestInformation } from "@/api/Requests";
 import { showToast } from "@/utils/Toast";
+import type { User } from "@/types/User";
 
-const props = defineProps({
-  email: String,
-  name: String,
-  lastName: String,
-  isNew: Boolean,
-});
+const props = defineProps<{
+  user?: User | null;
+  isNew: boolean;
+}>();
 
-const isNew = props.isNew || false;
+const emit = defineEmits<{
+  close: [];
+  userSaved: [];
+}>();
 
 const form = reactive({
   email: "",
   name: "",
   lastName: "",
-  status: "",
+  status: "ACTIVE",
   password: "",
 });
 
+const isLoading = ref(false);
+
 onMounted(() => {
-  form.email = props.email ? props.email : "";
-  form.name = props.name ? props.name : "";
-  form.lastName = props.lastName ? props.lastName : "";
+  if (props.user && !props.isNew) {
+    form.email = props.user.email;
+    form.name = props.user.name;
+    form.lastName = props.user.lastName;
+    form.status = props.user.status;
+  } else {
+    form.email = "";
+    form.name = "";
+    form.lastName = "";
+    form.status = "ACTIVE";
+    form.password = "";
+  }
 });
 
 const createUser = async () => {
+  if (!form.email || !form.name || !form.lastName || !form.password) {
+    showToast("Please fill in all required fields", "error");
+    return;
+  }
+
   try {
+    isLoading.value = true;
     const requestInfo: RequestInformation = {
-      path: `users/create`,
+      path: `users/register-user`,
       method: "POST",
-      data: { email: form.email, status: form.status },
+      data: {
+        email: form.email,
+        name: form.name,
+        lastName: form.lastName,
+        status: form.status,
+        password: form.password,
+      },
     };
 
     const response = await sendBackEndRequest(requestInfo);
 
     if (response.success) {
       showToast(response.message || "User created successfully", "success");
+      emit("userSaved");
     } else {
       showToast(
-        response.data.error.message || "Failed to create user",
+        response.data?.error?.message || "Failed to create user",
         "error"
       );
     }
   } catch (error) {
-    showToast("Error creating user:", "error");
+    showToast("Error creating user", "error");
+  } finally {
+    isLoading.value = false;
   }
 };
 
 const updateUser = async () => {
+  if (!form.name || !form.lastName) {
+    showToast("Please fill in all required fields", "error");
+    return;
+  }
+
   try {
+    isLoading.value = true;
     const requestInfo: RequestInformation = {
-      path: "users/",
+      path: "users/update-user", 
       method: "PUT",
-      data: { status: form.status },
+      data: {
+        email: form.email, 
+        name: form.name,
+        lastName: form.lastName,
+      },
     };
 
     const response = await sendBackEndRequest(requestInfo);
 
     if (response.success) {
-      showToast(
-        response.message || "User status updated successfully",
-        "success"
-      );
+      showToast(response.message || "User updated successfully", "success");
+      emit("userSaved");
     } else {
       showToast(
-        response.data.error.message || "Failed to update user status",
+        response.data?.error?.message || "Failed to update user",
         "error"
       );
     }
   } catch (error) {
-    showToast("Error updating user status:", "error");
+    showToast("Error updating user", "error");
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const handleSubmit = () => {
+  if (props.isNew) {
+    createUser();
+  } else {
+    updateUser();
   }
 };
 </script>
@@ -90,37 +136,71 @@ const updateUser = async () => {
         :ripple="false"
       >
         <v-card-title class="text-h5 text-center mb-4">
-          Create New Event
+          {{ isNew ? "Create New User" : "Edit User" }}
         </v-card-title>
 
-        <v-text-field
-          v-model="form.name"
-          label="User Name"
-          required
-        ></v-text-field>
+        <v-form @submit.prevent="handleSubmit">
+          <v-text-field
+            v-model="form.name"
+            label="User Name"
+            :disabled="isLoading"
+            required
+          ></v-text-field>
 
-        <v-text-field
-          v-model="form.lastName"
-          label="User Last Name"
-          required
-        ></v-text-field>
-        <v-text-field
-          v-model="form.email"
-          label="User Email"
-          type="email"
-          :disabled="!isNew"
-          required
-        ></v-text-field>
-        <v-text-field
-          v-if="isNew"
-          v-model="form.password"
-          label="User Password"
-          type="password"
-          required
-        ></v-text-field>
-        <v-btn @click="isNew ? createUser() : updateUser()">{{
-          isNew ? "Create User" : "Update User"
-        }}</v-btn>
+          <v-text-field
+            v-model="form.lastName"
+            label="User Last Name"
+            :disabled="isLoading"
+            required
+          ></v-text-field>
+
+          <v-text-field
+            v-model="form.email"
+            label="User Email"
+            type="email"
+            :disabled="!isNew || isLoading"
+            required
+          ></v-text-field>
+
+          <v-text-field
+            v-if="isNew"
+            v-model="form.password"
+            label="User Password"
+            type="password"
+            :disabled="isLoading"
+            required
+          ></v-text-field>
+
+          <v-select
+            v-if="isNew"
+            v-model="form.status"
+            label="Status"
+            :items="[
+              { title: 'Active', value: 'ACTIVE' },
+              { title: 'Not Active', value: 'NOT_ACTIVE' },
+            ]"
+            :disabled="isLoading"
+            required
+          ></v-select>
+
+          <div class="d-flex justify-end gap-2 mt-4">
+            <v-btn
+              variant="outlined"
+              @click="$emit('close')"
+              :disabled="isLoading"
+            >
+              Cancel
+            </v-btn>
+            <v-btn
+              type="submit"
+              color="primary"
+              :loading="isLoading"
+              :disabled="isLoading"
+            >
+              {{ isNew ? "Create User" : "Update User" }}
+            </v-btn>
+          </div>
+        </v-form>
       </v-card>
     </div>
   </div>
