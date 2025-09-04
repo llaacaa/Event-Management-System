@@ -12,7 +12,6 @@ const userState = useUserState();
 <template>
   <header>
     <div class="wrapper">
-
       <nav class="main-nav">
         <SearchBar />
         <RouterLink to="/" class="nav-link">
@@ -27,7 +26,19 @@ const userState = useUserState();
           <FontAwesomeIcon :icon="fas.faChartLine" class="mr-3" />
           Popular
         </RouterLink>
-        <RouterLink :to="userState.isLoggedIn ? '/' : '/login'" class="nav-link" @click="userState.isLoggedIn ? userState.logout() : null">
+        <RouterLink to="/all-events" class="nav-link">
+          <FontAwesomeIcon :icon="fas.faList" />
+          All Events
+        </RouterLink>
+        <RouterLink to="/users" class="nav-link" v-if="userState.isLoggedIn && userState.isAdmin">
+          <FontAwesomeIcon :icon="fas.faUsers" />
+          Users
+        </RouterLink>
+        <RouterLink
+          to="/login"
+          class="nav-link"
+          @click="userState.isLoggedIn ? userState.logout() : null"
+        >
           <FontAwesomeIcon :icon="fas.faUser" />
           {{ userState.isLoggedIn ? "Logout" : "Login" }}
         </RouterLink>
@@ -114,6 +125,5 @@ header {
     flex-direction: column;
     gap: 0.5rem;
   }
-  
 }
 </style>

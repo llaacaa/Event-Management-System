@@ -7,3 +7,7 @@ export const handleCardClick = (id: number) => {
 export const handleCategoryClick = (name: string) => {
   Router.push({ path: `/categories/${name}` });
 };
+
+export const goToHome = () => {
+  Router.push({ path: "/" });
+};

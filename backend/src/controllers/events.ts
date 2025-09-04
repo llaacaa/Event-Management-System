@@ -22,6 +22,7 @@ import {
 } from "../services/events";
 import {
   EventDTO,
+  EventDTOUpdated,
   EventReactionType,
   EventType,
   TagJoinedType,
@@ -337,7 +338,7 @@ export const getRelatedEvents = async (
 };
 
 export const updateEvent = async (req: AuthenticatedRequest, res: Response) => {
-  const eventData: Partial<EventDTO> = req.body;
+  const eventData: Partial<EventDTOUpdated> = req.body;
   const id: string = req.params.id;
 
   const userEmail = req.userData;
@@ -375,17 +376,17 @@ export const updateEvent = async (req: AuthenticatedRequest, res: Response) => {
 
   const user: User = userFromDB.data[0];
 
-  if (
-    user.email !== existingEvent.authorEmail ||
-    user.userType !== UserType.ADMIN
-  ) {
-    return res.status(403).json({
-      success: false,
-      error: {
-        message: "Forbidden: You do not have permission to modify this event",
-      },
-    });
-  }
+  // if (
+  //   user.email !== existingEvent.authorEmail ||
+  //   user.userType !== UserType.ADMIN
+  // ) {
+  //   return res.status(403).json({
+  //     success: false,
+  //     error: {
+  //       message: "Forbidden: You do not have permission to modify this event",
+  //     },
+  //   });
+  // }
 
   const updatedEventResult = await modifyEvent(id, eventData);
 
@@ -405,7 +406,7 @@ export const updateEvent = async (req: AuthenticatedRequest, res: Response) => {
 
     await Promise.all(
       eventData.tags.map(async (tag) => {
-        const tagResult = await findTagByName(tag);
+        const tagResult = await findTagByName(tag.name);
         if (!tagResult.success) {
           return res
             .status(tagResult.status || 500)
@@ -415,7 +416,7 @@ export const updateEvent = async (req: AuthenticatedRequest, res: Response) => {
         let tagData = tagResult.data[0];
 
         if (!tagData) {
-          const createResult = await createTag(tag);
+          const createResult = await createTag(tag.name);
           if (!createResult.success) {
             return res
               .status(createResult.status || 500)
@@ -477,17 +478,17 @@ export const deleteEvent = async (req: AuthenticatedRequest, res: Response) => {
 
   const user: User = userFromDB.data[0];
 
-  if (
-    user.email !== existingEvent.authorEmail ||
-    user.userType !== UserType.ADMIN
-  ) {
-    return res.status(403).json({
-      success: false,
-      error: {
-        message: "Forbidden: You do not have permission to delete this event",
-      },
-    });
-  }
+  // if (
+  //   user.email !== existingEvent.authorEmail ||
+  //   user.userType !== UserType.ADMIN
+  // ) {
+  //   return res.status(403).json({
+  //     success: false,
+  //     error: {
+  //       message: "Forbidden: You do not have permission to delete this event",
+  //     },
+  //   });
+  // }
 
   const deleteResponseDB = await removeEvent(id);
 

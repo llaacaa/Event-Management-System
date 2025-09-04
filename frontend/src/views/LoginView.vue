@@ -6,6 +6,7 @@
           class="pa-6"
           elevation="10"
           :style="{ borderRadius: 'var(--card-radius)' }"
+          v-if="!isLoggedIn"
         >
           <v-card-title
             class="justify-center"
@@ -62,6 +63,22 @@
             </v-form>
           </v-card-text>
         </v-card>
+        <v-card
+          class="pa-6"
+          elevation="10"
+          :style="{ borderRadius: 'var(--card-radius)' }"
+          v-else
+        >
+          <v-card-title
+            class="justify-center"
+            style="color: var(--color-heading); font-weight: 700"
+          >
+            Welcome Back!
+          </v-card-title>
+          <v-card-text>
+            <p>You are already logged in.</p>
+          </v-card-text>
+        </v-card>
       </v-col>
     </v-row>
   </v-container>
@@ -69,7 +86,9 @@
 
 <script setup lang="ts">
 import { sendBackEndRequest } from "@/api/Requests";
+import Router from "@/router";
 import { useUserState } from "@/stores/UserState";
+import { showToast } from "@/utils/Toast";
 import { ref } from "vue";
 
 const email = ref("");
@@ -77,7 +96,7 @@ const password = ref("");
 const loading = ref(false);
 const error = ref("");
 const formRef = ref();
-const { setUser } = useUserState();
+const { setUser, isLoggedIn } = useUserState();
 
 const rules = {
   required: (v: string) => !!v || "This field is required",
@@ -100,8 +119,9 @@ const submit = async () => {
     });
     if (response.success && response.data) {
       setUser(response.data.user);
+      showToast("Logged in successfully", "success");
     } else {
-      error.value = response.message || "Login failed";
+      error.value = response.data.error.message || "Login failed";
     }
   } catch (e) {
     error.value = "Network error";

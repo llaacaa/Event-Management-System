@@ -29,7 +29,7 @@ eventsRouter.get("/by-category/:category", asyncHandler(getEventsByCategoryContr
 eventsRouter.get("/related-events/:id", asyncHandler(getRelatedEvents));
 eventsRouter.get("/:id", asyncHandler(getEventByIdController));
 eventsRouter.post("/", checkBody, checkForToken, asyncHandler(addEvent));
-eventsRouter.patch("/:id", checkBody, checkForToken, asyncHandler(updateEvent));
+eventsRouter.put("/:id", checkBody, checkForToken, asyncHandler(updateEvent));
 eventsRouter.delete("/:id", checkForToken, asyncHandler(deleteEvent));
 
 eventsRouter.put("/increment-views/:id", asyncHandler(incrementViews));

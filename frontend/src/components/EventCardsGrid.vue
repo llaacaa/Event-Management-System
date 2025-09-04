@@ -4,6 +4,9 @@ import { onMounted, ref } from "vue";
 import { type RequestInformation, sendBackEndRequest } from "@/api/Requests.ts";
 import type { EventCard } from "@/types/Events.ts";
 import { handleCardClick } from "@/utils/ChangeRoute";
+import { showToast } from "@/utils/Toast";
+import EventForm from "./EventForm.vue";
+import AddEventForm from "./AddEventForm.vue";
 
 const props = defineProps<{
   title: string;
@@ -12,8 +15,10 @@ const props = defineProps<{
 
 const isLoading = ref(false);
 const allCards = ref<EventCard[]>([]);
+const isCreateEventModalActive = ref(false);
 
 const getCards = async () => {
+  isCreateEventModalActive.value = false;
   isLoading.value = true;
   const requestInfo: RequestInformation = {
     method: "GET",
@@ -27,22 +32,51 @@ const getCards = async () => {
 };
 
 onMounted(getCards);
+
+const handleEventDelete = async (eventId: number) => {
+  try {
+    const requestInfo: RequestInformation = {
+      method: "DELETE",
+      path: `events/${eventId}`,
+    };
+
+    const response = await sendBackEndRequest(requestInfo);
+
+    if (response.success) {
+      showToast(response.message || "Event deleted successfully", "success");
+      allCards.value = allCards.value.filter((card) => card.id !== eventId);
+    } else {
+      showToast(
+        response.data.error.message || "Failed to delete event",
+        "error"
+      );
+    }
+  } catch (error) {
+    showToast("An error occurred while deleting the event", "error");
+  }
+};
 </script>
 
 <template>
-  <div class="home-container">
+  <AddEventForm
+    v-if="isCreateEventModalActive"
+    @save="getCards"
+    @close="isCreateEventModalActive = false"
+  />
+  <div class="home-container relative">
     <h1 class="page-title">{{ title }}</h1>
+    <EventForm @save-edit="getCards" />
+    <v-btn @click="isCreateEventModalActive = true" color="primary">
+      <v-icon icon="mdi-plus"></v-icon>Add Event
+    </v-btn>
     <div class="fade-container">
       <div class="cards-grid">
-        <div
-          v-for="card in allCards"
-          :key="card.id"
-          class="card-wrapper"
-        >
+        <div v-for="card in allCards" :key="card.id" class="card-wrapper">
           <Card
             v-bind="card"
             :loading="isLoading"
             @cardClick="handleCardClick(card.id)"
+            @delete="handleEventDelete(card.id)"
           />
         </div>
       </div>
@@ -76,6 +110,7 @@ onMounted(getCards);
 }
 .fade-container {
   position: relative;
+  z-index: 50;
   mask-image: linear-gradient(
     to bottom,
     transparent,

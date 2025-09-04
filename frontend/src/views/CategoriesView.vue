@@ -4,6 +4,10 @@ import PaginationComponent from "@/components/PaginationComponent.vue";
 import { sendBackEndRequest, type RequestInformation } from "@/api/Requests";
 import { formatDate } from "@/utils/DateFromatter";
 import { handleCategoryClick } from "@/utils/ChangeRoute";
+import { useUserState } from "@/stores/UserState";
+import { storeToRefs } from "pinia";
+import { showToast } from "@/utils/Toast";
+import CategoryForm from "@/components/CategoryForm.vue";
 
 interface Category {
   name: string;
@@ -15,6 +19,10 @@ const categories = ref<Category[]>([]);
 const currentPage = ref(1);
 const totalPages = ref(1);
 const isLoading = ref(false);
+const showDialog = ref(false);
+const selectedCategory = ref<Category | null>(null);
+
+const { isLoggedIn } = storeToRefs(useUserState());
 
 async function fetchCategories(page = 1) {
   isLoading.value = true;
@@ -39,17 +47,94 @@ onMounted(() => fetchCategories(currentPage.value));
 watch(currentPage, (page) => {
   fetchCategories(page);
 });
+
+const deleteCategory = async (categoryName: string) => {
+  const confirmed = confirm(
+    `Are you sure you want to delete the category "${categoryName}"?`
+  );
+  if (!confirmed) return;
+
+  const requestInfo: RequestInformation = {
+    method: "DELETE",
+    path: `categories/${categoryName}`,
+  };
+
+  try {
+    const response = await sendBackEndRequest(requestInfo);
+    if (response.success) {
+      showToast("Category deleted successfully", "success");
+      fetchCategories(currentPage.value);
+    } else {
+      showToast(response.data.error.message, "error");
+    }
+  } catch (error) {
+    showToast("Network error", "error");
+  }
+};
+
+const editCategory = (category: Category) => {
+  selectedCategory.value = category;
+  showDialog.value = true;
+};
+
+const createNewCategory = () => {
+  selectedCategory.value = null;
+  showDialog.value = true;
+};
+
+const handleSave = async (formData: { name: string; description: string }) => {
+  const requestInfo: RequestInformation = {
+    method: selectedCategory.value ? "PUT" : "POST",
+    path: 'categories/',
+    data: formData,
+  };
+
+  try {
+    const response = await sendBackEndRequest(requestInfo);
+    if (response.success) {
+      showToast(
+        `Category ${
+          selectedCategory.value ? "updated" : "created"
+        } successfully`,
+        "success"
+      );
+      fetchCategories(currentPage.value);
+      showDialog.value = false;
+    } else {
+      showToast(response.data.error.message, "error");
+    }
+  } catch (error) {
+    showToast("Network error", "error");
+  }
+};
 </script>
 
 <template>
   <div class="categories-view">
-    <h1 class="text-2xl font-bold mb-6">Categories</h1>
+    <div class="header-section">
+      <h1 class="text-2xl font-bold">Categories</h1>
+      <v-btn
+        v-if="isLoggedIn"
+        color="primary"
+        @click="createNewCategory"
+        class="create-button"
+      >
+        Add New Category
+      </v-btn>
+    </div>
 
     <PaginationComponent
       v-if="totalPages > 1"
       :totalPages="totalPages"
       v-model:currentPage="currentPage"
       class="mb-6"
+    />
+
+    <CategoryForm
+      v-model="showDialog"
+      :category-name="selectedCategory?.name"
+      :category-description="selectedCategory?.description"
+      @save="handleSave"
     />
 
     <div v-if="isLoading" class="loading">
@@ -67,12 +152,32 @@ watch(currentPage, (page) => {
         <div class="category-content">
           <div class="category-main">
             <h3 class="category-name">{{ category.name }}</h3>
-            <p class="category-description">{{ category.description.length > 40 ? category.description.slice(0, 40) + '...' : category.description }}</p>
+            <p class="category-description">
+              {{
+                category.description.length > 40
+                  ? category.description.slice(0, 40) + "..."
+                  : category.description
+              }}
+            </p>
           </div>
           <div class="category-meta">
             <span class="category-date">{{
               formatDate(category.createdAt)
             }}</span>
+            <div class="category-actions" v-if="isLoggedIn">
+              <button
+                class="action-button edit"
+                @click.stop="editCategory(category)"
+              >
+                Edit
+              </button>
+              <button
+                @click.stop="deleteCategory(category.name)"
+                class="action-button delete"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -85,6 +190,18 @@ watch(currentPage, (page) => {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
+}
+
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.create-button {
+  border-radius: 2rem;
+  text-transform: none;
 }
 
 .categories-grid {

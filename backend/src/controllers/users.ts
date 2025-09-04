@@ -158,6 +158,14 @@ export const getAllUsers = async (req: Request, res: Response) => {
   });
 };
 
+export const logoutUser = async (req: Request, res: Response) => {
+  res.clearCookie("token");
+  return res.status(200).json({
+    success: true,
+    message: "User logged out successfully!",
+  });
+};
+
 export const updateUser = async (req: Request, res: Response) => {
   const { email, name, lastName, userType } = req.body;
 

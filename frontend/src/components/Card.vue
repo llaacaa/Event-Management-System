@@ -68,14 +68,34 @@
           <span class="bg-gray-100 rounded-xl px-2">{{ maxCapacity }}</span>
         </div>
       </div>
+      <v-btn
+        @click.stop="handleEventEdit"
+        v-if="isLoggedIn"
+        color="primary"
+        class="mx-2"
+        ><v-icon icon="mdi-pencil"></v-icon>Edit</v-btn
+      >
+      <v-btn
+        @click.stop="$emit('delete', id)"
+        v-if="isLoggedIn"
+        color="error"
+        class="mx-2"
+        ><v-icon icon="mdi-delete"></v-icon>Delete</v-btn
+      >
     </v-card-text>
   </v-card>
 </template>
 
 <script setup lang="ts">
-import type { Tag } from "@/types/Events";
+import type { EventCard, Tag } from "@/types/Events";
 import { formatDate } from "@/utils/DateFromatter.ts";
 import { computed, toRef } from "vue";
+
+import { useUserState } from "@/stores/UserState";
+import { storeToRefs } from "pinia";
+import { useEventStore } from "@/stores/EventDetailState";
+
+const { isLoggedIn } = storeToRefs(useUserState());
 
 const props = defineProps({
   loading: {
@@ -136,7 +156,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["cardClick"]);
+const emit = defineEmits(["cardClick", "delete"]);
 
 const descriptionToUse = computed(() => {
   const desc = props.description;
@@ -150,6 +170,27 @@ const titleToUse = computed(() => {
 
 const onClick = () => {
   emit("cardClick");
+};
+
+const event: EventCard = {
+  id: props.id,
+  title: props.title,
+  description: props.description,
+  createdAt: props.createdAt,
+  eventDate: props.eventDate,
+  location: props.location,
+  views: props.views,
+  authorEmail: props.authorEmail,
+  categoryName: props.categoryName,
+  maxCapacity: props.maxCapacity,
+  likeCount: props.likeCount,
+  dislikeCount: props.dislikeCount,
+  tags: props.tags,
+};
+
+const handleEventEdit = () => {
+  const { setEditingEvent } = useEventStore();
+  setEditingEvent(event);
 };
 </script>
 

@@ -38,6 +38,16 @@ const router = createRouter({
       component: () => import("../views/EventDetailsView.vue"),
     },
     {
+      path: "/all-events",
+      name: "allEvents",
+      component: () => import("../views/AllEventsView.vue"),
+    },
+    {
+      path: "/users",
+      name: "users",
+      component: () => import("../views/UsersView.vue"),
+    },
+    {
       path: "/login",
       name: "login",
       component: () => import("../views/LoginView.vue"),

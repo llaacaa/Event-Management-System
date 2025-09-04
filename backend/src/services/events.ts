@@ -1,5 +1,5 @@
 import { query } from "../utils/db";
-import { EventDTO, EventReactionType } from "../types/types";
+import { EventDTO, EventDTOUpdated, EventReactionType } from "../types/types";
 
 const selectAllSQL = `
     id,
@@ -91,7 +91,7 @@ export const getEventById = (id: string) => {
   return query(queryString, values);
 };
 
-export const modifyEvent = async (id: string, eventData: Partial<EventDTO>) => {
+export const modifyEvent = async (id: string, eventData: Partial<EventDTOUpdated>) => {
   const { title, description, eventDate, location, category, maxCapacity } =
     eventData;
 
@@ -99,32 +99,32 @@ export const modifyEvent = async (id: string, eventData: Partial<EventDTO>) => {
   const params = [id];
   let paramIndex = 2;
 
-  if (title !== undefined) {
+  if (title) {
     updateFields.push(`title = $${paramIndex++}`);
     params.push(title);
   }
 
-  if (description !== undefined) {
+  if (description) {
     updateFields.push(`description = $${paramIndex++}`);
     params.push(description);
   }
 
-  if (eventDate !== undefined) {
+  if (eventDate) {
     updateFields.push(`event_date = $${paramIndex++}`);
     params.push(eventDate);
   }
 
-  if (location !== undefined) {
+  if (location) {
     updateFields.push(`location = $${paramIndex++}`);
     params.push(location);
   }
 
-  if (category !== undefined) {
+  if (category) {
     updateFields.push(`category = $${paramIndex++}`);
     params.push(category);
   }
 
-  if (maxCapacity !== undefined) {
+  if (maxCapacity) {
     updateFields.push(`max_capacity = $${paramIndex++}`);
     params.push(maxCapacity.toString());
   }

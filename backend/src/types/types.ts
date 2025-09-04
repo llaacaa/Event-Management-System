@@ -55,6 +55,16 @@ export interface EventDTO {
   maxCapacity?: number;
 }
 
+export interface EventDTOUpdated {
+  title?: string;
+  description?: string;
+  eventDate?: string;
+  location?: string;
+  category?: string;
+  tags?: { id: string; name: string }[];
+  maxCapacity?: number;
+}
+
 export type TotalCount = {
   count: string;
 };

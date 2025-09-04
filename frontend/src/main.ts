@@ -3,6 +3,9 @@ import './assets/main.css';
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 
+import ToastPlugin from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-bootstrap.css';
+
 // Vuetify
 import 'vuetify/styles';
 import { createVuetify } from 'vuetify';
@@ -28,5 +31,6 @@ app.component('font-awesome-icon', FontAwesomeIcon);
 app.use(createPinia());
 app.use(router);
 app.use(vuetify);
+app.use(ToastPlugin);
 
 app.mount('#app');
